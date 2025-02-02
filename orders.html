@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard & Order Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            width: 80%;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #00a6ff6d;
+            height: 100vh;
+            color: white;
+            position: fixed;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #008e9d;
+        }
+
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .content h1 {
+            color: white;
+            background-color: #00a6ff6d;
+            border-radius: 30px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.751);
+            padding: 100px;
+            border-radius: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            field-sizing: 1px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Ensures consistent sizing */
+        }
+
+        button {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            border-radius: 30px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script>
+        let fileCount = 1;
+        function addFileInput() {
+            if (fileCount < 5) {
+                fileCount++;
+                const fileInputContainer = document.getElementById('fileInputContainer');
+                const newFileInput = document.createElement('div');
+                newFileInput.classList.add('form-group');
+                newFileInput.innerHTML = `
+                    <label>Choose File ${fileCount}:</label>
+                    <input type="file" name="files[]" accept=".pdf,.txt,.png,.docx,.jpeg,.jpg" required>
+                `;
+                fileInputContainer.appendChild(newFileInput);
+            } else {
+                alert('Maximum of 5 files allowed.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#orders">Orders</a></li>
+            <li><a href="#notifications">Notifications</a></li>
+            <li><a href="#profile">Profile</a></li>
+            <li><a href="#logout">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>Welcome to Your Dashboard</h1>
+        <div class="card" id="orders">
+            <h2>Place Your Order</h2>
+            <form id="orderForm" action="submit_order.php" method="POST" enctype="multipart/form-data">
+                <div id="fileInputContainer" class="form-group">
+                    <label>Choose File 1:</label>
+                    <input type="file" name="files[]" accept=".pdf,.txt,.png,.docx,.jpeg,.jpg" required>
+                </div>
+                <button type="button" onclick="addFileInput()">Add Another File</button>
+                <div class="form-group">
+                    <label>Print Type:</label>
+                    <select name="printType" required>
+                        <option value="black_white">Black & White</option>
+                        <option value="color">Color</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Number of Copies:</label>
+                    <input type="number" name="copies" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Print Style:</label>
+                    <select name="style" required>
+                        <option value="single_sided">Single-sided</option>
+                        <option value="double_sided">Double-sided</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Binding:</label>
+                    <select name="binding">
+                        <option value="none">None</option>
+                        <option value="spiral">Spiral Binding</option>
+                        <option value="thermal">Thermal Binding</option>
+                        <option value="staple">Stapled</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Paper Size:</label>
+                    <select name="paperSize" required>
+                        <option value="A3">A3</option>
+                        <option value="A4">A4</option>
+                        <option value="A5">A5</option>
+                        <option value="Letter">Letter</option>
+                        <option value="Legal">Legal</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Additional Notes:</label>
+                    <textarea name="notes" rows="4" placeholder="Enter any special instructions"></textarea>
+                </div>
+                <button type="submit" name="action" value="placeOrder">Place Order</button>
+                <button type="submit" name="action" value="saveDraft">Save as Draft</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

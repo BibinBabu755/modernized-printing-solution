@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Form</title>
+    <style>
+        body {
+            background: url('pixelcut-export-Photoroom_upscaled.png') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            overflow-y: hidden;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+
+        }
+
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .container {
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .login-box {
+            padding: 30px;
+            border-radius: 30px;
+            background-color: rgba(255, 255, 255, 0.697);
+            box-shadow: 0 0 10px rgba(155, 155, 155, 0.603);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #000000;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ffffff;
+            background-color: #ffffff;
+            border-radius: 30px;
+            color: #000000;
+            box-sizing: border-box;
+        }
+
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+
+        .forgot-password {
+            color: #000000;
+            text-decoration: none;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .sign-in-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0011ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .sign-in-button:hover {
+            background-color: #008e9d;
+            color: black;
+        }
+
+        .signup-link {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .signup-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="login-box">
+            <h2>Login</h2>
+            <form>
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password">
+                </div>
+                <div class="options">
+                    <a href="" class="forgot-password">Forgot password?</a>
+                </div>
+                <button type="submit" class="sign-in-button">Sign In</button>
+            </form>
+            <div class="signup-link">
+                Don't have an account? <a href="signup">Sign up</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.querySelector('#email').value;
+            const password = document.querySelector('#password').value;
+
+            if (email === '' || password === '') {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            }
+            ).then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        alert('Login successful');
+                        window.localStorage.setItem('email', email);
+                        window.location.href = '/dashboard';
+                    }
+                });
+        });
+    </script>
+</body>
+
+</html>

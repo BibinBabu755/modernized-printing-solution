@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            background-color: #f4f4f9;
+        }
+
+        .sidebar {
+            width: 150px;
+            background-color: #00a6ff6d;
+            height: 100vh;
+            color: white;
+            position: fixed;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #008e9d;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+
+        .content h1 {
+            color: #ffffff;
+            background-color:#00a6ff6d;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+        }
+
+        .card p {
+            color: #666;
+        }
+        
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .content {
+            animation: fadeIn 2s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="orders">Orders</a></li>
+
+            <li><a href="#notifications">Notifications</a></li>
+            <li><a href="#profile">Profile</a></li>
+            <li><a href="#logout">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>Welcome to your Dashboard</h1>
+
+        <div class="card" id="overview">
+            <h2>Overview</h2>
+            <p>Quick stats about your account and activity.</p>
+        </div>
+
+        <div class="card" id="orders">
+            <h2>Orders</h2>
+            <p>View and manage your orders here.</p>
+        </div>
+
+        <div class="card" id="notifications">
+            <h2>Notifications</h2>
+            <p>Check your latest notifications and updates.</p>
+        </div>
+
+        <div class="card" id="profile">
+            <h2>Profile</h2>
+            <p>Manage your account settings and preferences.</p>
+        </div>
+    </div>
+</body>
+
+</html>
