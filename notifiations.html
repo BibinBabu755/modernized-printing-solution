@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #00a6ff6d;
+            height: 100vh;
+            color: white;
+            position: fixed;
+            padding: 20px;
+            box-sizing: border-box;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            flex-grow: 1;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #008e9d;
+        }
+
+        .notification-count {
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .dashboard {
+            width: 60%;
+            margin: 50px auto;
+            margin-left: 250px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .notification-tab {
+            margin-top: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .notification-tab h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #007bff;
+        }
+
+        .notification-tab ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .notification-tab li {
+            padding: 10px;
+            font-size: 16px;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
+        }
+
+        .submitted { color: #007BFF; }
+        .processing { color: #FFC107; }
+        .completed { color: #28A745; }
+        .unread { font-weight: bold; background-color: #f0f8ff; }
+        .read { font-weight: normal; background-color: #ffffff; }
+
+        #clearNotifications {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #clearNotifications:hover {
+            background: #cc0000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Dashboard</h2>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#orders">Orders</a></li>
+            <li><a href="#notifications" onclick="markAllAsRead()">Notifications <span id="notificationCount" class="notification-count">0</span></a></li>
+            <li><a href="#profile">Profile</a></li>
+            <li><a href="#logout">Logout</a></li>
+        </ul>
+    </div>
+
+    <div class="dashboard">
+        <h2>Notifications</h2>
+
+        <div class="notification-tab">
+            <ul id="permanentNotificationList"></ul>
+            <button id="clearNotifications" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+    </div>
+
+    <script>
+        let unreadCount = 0;
+
+        function getFormattedDateTime() {
+            const now = new Date();
+            return now.toLocaleString();
+        }
+
+        function addNotification(type) {
+            const permanentNotificationList = document.getElementById("permanentNotificationList");
+            const li = document.createElement("li");
+            const timestamp = getFormattedDateTime();
+            let message = "";
+
+            if (type === "submitted") {
+                message = "📩 Your order has been submitted - " + timestamp;
+                li.classList.add("submitted");
+            } else if (type === "processing") {
+                message = "⚙ Your order is processing - " + timestamp;
+                li.classList.add("processing");
+            } else if (type === "completed") {
+                message = "🎉 Your order is completed! - " + timestamp;
+                li.classList.add("completed");
+            }
+
+            li.classList.add("unread");
+            li.textContent = message;
+            permanentNotificationList.prepend(li);
+            updateUnreadCount(1);
+        }
+
+        function updateUnreadCount(change) {
+            unreadCount += change;
+            document.getElementById("notificationCount").textContent = unreadCount;
+        }
+
+        function markAllAsRead() {
+            document.querySelectorAll(".unread").forEach(notification => {
+                notification.classList.remove("unread");
+                notification.classList.add("read");
+            });
+            unreadCount = 0;
+            document.getElementById("notificationCount").textContent = unreadCount;
+        }
+
+        function clearAllNotifications() {
+            document.getElementById("permanentNotificationList").innerHTML = "";
+            unreadCount = 0;
+            document.getElementById("notificationCount").textContent = unreadCount;
+        }
+
+        setTimeout(() => addNotification("submitted"), 2000);
+        setTimeout(() => addNotification("processing"), 5000);
+        setTimeout(() => addNotification("completed"), 8000);
+    </script>
+</body>
+</html>
