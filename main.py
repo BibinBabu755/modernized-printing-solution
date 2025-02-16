@@ -79,6 +79,13 @@ def admin():
         return open("admin.html").read(), 200
     except FileNotFoundError:
         return jsonify({"message": "Welcome to printing page"}), 200
+    
+@app.route("/overview", methods=["GET"])
+def overview_page():
+    try:
+        return open("overview.html").read(), 200
+    except FileNotFoundError:
+        return jsonify({"error": "Overview page not found"}), 404
 
 @app.route("/orders", methods=["GET"])
 def orders_page():

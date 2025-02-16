@@ -71,6 +71,7 @@
 
         input[type="text"],
         input[type="email"],
+        input[type="tel"],
         input[type="password"] {
             width: calc(100% - 22px);
             padding: 10px;
@@ -96,6 +97,7 @@
             background-color: #008e9d;
             color: black;
         }
+        
     </style>
 </head>
 
@@ -107,16 +109,16 @@
                 <div class="name-fields">
                     <div class="input-group">
                         <label for="firstName">First Name</label>
-                        <input type="text" id="firstName" placeholder="First name">
+                        <input type="text" id="firstName" placeholder="First name" required>
                     </div>
                     <div class="input-group">
                         <label for="lastName">Last Name</label>
-                        <input type="text" id="lastName" placeholder="Last name">
+                        <input type="text" id="lastName" placeholder="Last name" required>
                     </div>
                 </div>
                 <div class="input-group" label for="Designation">Choose your Designation:</label>
                     <select name="Designation" id="Designation" required>
-                        <option value="" disabled selected>Select Designation</option>
+                        <option value="" disabled selected>Designation</option>
                         <option value="Faculty">Faculty</option>
                         <option value="Student">Student</option>
                     </select>
@@ -124,16 +126,19 @@
                 </div>
                 <div class="input-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" placeholder="Enter your email">
+                    <input type="email" id="email" placeholder="Enter your email" required>
                 </div>
-                
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                </div>                
                 <div class="input-group">
                     <label for="password">Create Password</label>
-                    <input type="password" id="password" placeholder="Create a password">
+                    <input type="password" id="password" placeholder="Create a password" required>
                 </div>
                 <div class="input-group">
                     <label for="confirmPassword">Confirm Password</label>
-                    <input type="password" id="confirmPassword" placeholder="Confirm your password">
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
                 </div>
                 <button type="submit" class="create-account-button">Create Account</button>
             </form>
@@ -146,6 +151,7 @@
             const firstName = document.querySelector('#firstName').value;
             const lastName = document.querySelector('#lastName').value;
             const email = document.querySelector('#email').value;
+            const phone = document.querySelector('#phone').value;
             const password = document.querySelector('#password').value;
             const confirmPassword = document.querySelector('#confirmPassword').value;
 
@@ -165,6 +171,7 @@
                     firstName,
                     lastName,
                     email,
+                    phone,
                     password,
                 })
             }).then(response => response.json())

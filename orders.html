@@ -66,10 +66,11 @@
 
         .card {
             background-color: rgba(255, 255, 255, 0.751);
-            padding: 100px;
+            padding: 70px;
             border-radius: 30px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            
         }
 
         .form-group {
@@ -129,18 +130,17 @@
     <div class="sidebar">
         <h2>Dashboard</h2>
         <ul>
-            <li><a href="#overview">Overview</a></li>
+            <li><a href="overview">Overview</a></li>
             <li><a href="orders">Orders</a></li>
-            <li><a href="notifications" ></a></li>
+            <li><a href="notifications" >Notifications</a></li>
             <li><a href="profile">Profile</a></li>
             <li><a href="#logout">Logout</a></li>
         </ul>
     </div>
 
     <div class="content">
-        <h1>Welcome to Your Dashboard</h1>
         <div class="card" id="orders">
-            <h2>Place Your Order</h2>
+            <h2 style="text-align: center;">Place Your Order</h2>
             <form id="orderForm" action="submit_order.php" method="POST" enctype="multipart/form-data">
                 <div id="fileInputContainer" class="form-group">
                     <label>Choose File 1:</label>
