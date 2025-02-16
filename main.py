@@ -86,6 +86,35 @@ def orders_page():
         return open("orders.html").read(), 200
     except FileNotFoundError:
         return jsonify({"error": "Orders page not found"}), 404
+    
+@app.route("/notifications", methods=["GET"])
+def notifications_page():
+    try:
+        return open("notifiations.html").read(), 200
+    except FileNotFoundError:
+        return jsonify({"error": "Notification page not found"}), 404
+    
+@app.route("/profile", methods=["GET"])
+def profile_page():
+    try:
+        return open("profile.html").read(), 200
+    except FileNotFoundError:
+        return jsonify({"error": "Profile page not found"}), 404
+    
+@app.route("/Default Pfp.jpg", methods=["GET"])
+def profile_img():
+    try:
+        return send_file("Default Pfp.jpg", mimetype="image/png")
+    except FileNotFoundError:
+        return jsonify({"message": "No Profile Picture"}), 404
+    
+    
+@app.route("/camera_image.png", methods=["GET"])
+def camera_img():
+    try:
+        return send_file("camera_image.png", mimetype="image/png")
+    except FileNotFoundError:
+        return jsonify({"message": "No Camera Picture"}), 404
 
 @app.route("/", methods=["GET"])
 def index():

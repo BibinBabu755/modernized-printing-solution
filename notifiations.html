@@ -137,9 +137,9 @@
         <h2>Dashboard</h2>
         <ul>
             <li><a href="#overview">Overview</a></li>
-            <li><a href="#orders">Orders</a></li>
-            <li><a href="#notifications" onclick="markAllAsRead()">Notifications <span id="notificationCount" class="notification-count">0</span></a></li>
-            <li><a href="#profile">Profile</a></li>
+            <li><a href="orders">Orders</a></li>
+            <li><a href="notifications" ></a></li>
+            <li><a href="profile">Profile</a></li>
             <li><a href="#logout">Logout</a></li>
         </ul>
     </div>
@@ -154,6 +154,7 @@
     </div>
 
     <script>
+        
         let unreadCount = 0;
 
         function getFormattedDateTime() {

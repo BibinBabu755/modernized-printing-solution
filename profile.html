@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile</title>
     <style>
+        /* Sidebar Styles */
         .sidebar {
-            width: 150px;
+            width: 180px;
             background-color: #00a6ff6d;
-            height: 150vh;
+            height: 100vh;
             color: white;
             position: fixed;
-            padding: 10px;
+            padding: 15px;
             box-sizing: border-box;
-            top: 0
+            top: 0;
         }
 
         .sidebar h2 {
             text-align: center;
+            margin-bottom: 20px;
         }
 
         .sidebar ul {
@@ -41,6 +43,8 @@
         .sidebar ul li a:hover {
             background-color: #008e9d;
         }
+
+        /* General Body Styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -53,11 +57,18 @@
         .container {
             width: 50%;
             margin: 50px auto;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
+            position: relative;
+        }
+
+        /* Profile Picture Container */
+        .profile-pic-container {
+            position: relative;
+            display: inline-block;
         }
 
         .profile-img {
@@ -68,17 +79,39 @@
             border-radius: 50%;  
             border: 3px solid #ffffff;
             object-fit: cover;
-}
+        }
 
+        /* Edit Icon */
+        .edit-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: 2px solid white;
+        }
 
-        h2 {
-            color: #ffffff;
+        .edit-icon img {
+            width: 20px;
+            height: 20px;
+        }
+
+        #edit-profile-pic {
+            display: none;
         }
 
         .info {
             margin: 15px 0;
         }
 
+        /* Button Styling */
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -96,6 +129,7 @@
             background-color: #0056b3;
         }
 
+        /* Popup Styling */
         .popup {
             display: none;
             position: fixed;
@@ -107,37 +141,63 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 300px;
+            width: 320px;  /* Set a fixed width */
+        }
+
+        /* Styling the Labels & Input Fields */
+        .popup label {
+            display: block;
+            text-align: left;
+            font-weight: bold;
+            margin-bottom: 5px; 
         }
 
         .popup input {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
+            width: calc(100% - 20px); 
+            padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            display: block;
+            margin-bottom: 15px; /* Equal spacing after input */
         }
 
-        .popup button {
+        /* Adjust Button Layout */
+        .popup .button-container {
+            display: flex;
+            justify-content: space-between;
             margin-top: 10px;
         }
+
+        .popup .button-container .btn {
+            flex: 1;
+            margin: 5px;
+        }
+
+
     </style>
 </head>
 <body>
+
     <div class="sidebar">
         <h2>Dashboard</h2>
         <ul>
             <li><a href="#overview">Overview</a></li>
             <li><a href="orders">Orders</a></li>
-
-            <li><a href="#notifications">Notifications</a></li>
-            <li><a href="#profile">Profile</a></li>
-            <li><a href="logout">Logout</a></li>
+            <li><a href="notifications">Notifications</a></li>
+            <li><a href="profile">Profile</a></li>
+            <li><a href="#logout">Logout</a></li>
         </ul>
     </div>
 
     <div class="container">
-        <img src="Default Pfp.jpg" alt="Profile Picture" class="profile-img">
+        <div class="profile-pic-container">
+            <img src="Default Pfp.jpg" alt="Profile Picture" class="profile-img" id="profile-pic">
+            <label for="edit-profile-pic" class="edit-icon">
+                <img src="camera_image.png" alt="Edit">
+            </label>
+            <input type="file" id="edit-profile-pic" accept="image/*" onchange="changeProfilePic(event)">
+        </div>
+
         <h3 id="user-name">John Doe</h3>
         <p class="info"><strong>Email:</strong> <span id="user-email">johndoe@example.com</span></p>
         <p class="info"><strong>Phone:</strong> <span id="user-phone">+123 456 7890</span></p>
@@ -149,82 +209,83 @@
     <!-- Edit Profile Popup -->
     <div class="popup" id="edit-profile">
         <h2>Edit Profile</h2>
-        <label>Profile Picture:</label>
-        <input type="file" id="edit-profile-pic" accept="image/*"><br>
-        <button class="btn" onclick="removeProfilePic()">Remove Picture</button>
+        <label for="edit-name">Name:</label>
+        <input type="text" id="edit-name">
 
-        <label>Name: <input type="text" id="edit-name"></label><br>
-        <label>Email: <input type="email" id="edit-email"></label><br>
-        <label>Phone: <input type="text" id="edit-phone"></label><br>
-        <button class="btn" onclick="saveProfile()">Save</button>
-        <button class="btn" onclick="hidePopup('edit-profile')">Cancel</button>
+        <label for="edit-email">Email:</label>
+        <input type="email" id="edit-email">
+
+        <label for="edit-phone">Phone:</label>
+        <input type="text" id="edit-phone">
+
+        <div class="button-container">
+            <button class="btn" onclick="saveProfile()">Save</button>
+            <button class="btn" onclick="hidePopup('edit-profile')">Cancel</button>
+        </div>
     </div>
 
     <!-- Change Password Popup -->
     <div class="popup" id="change-password">
         <h2>Change Password</h2>
-        <label>New Password: <input type="password" id="new-password"></label><br>
-        <label>Confirm Password: <input type="password" id="confirm-password"></label><br>
-        <button class="btn" onclick="updatePassword()">Update</button>
-        <button class="btn" onclick="hidePopup('change-password')">Cancel</button>
+        <label for="new-password">New Password:</label>
+        <input type="password" id="new-password">
+
+        <label for="confirm-password">Confirm Password:</label>
+        <input type="password" id="confirm-password">
+
+        <div class="button-container">
+            <button class="btn" onclick="updatePassword()">Update</button>
+            <button class="btn" onclick="hidePopup('change-password')">Cancel</button>
+        </div>
     </div>
 
     <script>
         function showPopup(id) {
-            if (id === 'edit-profile') {
-                document.getElementById('edit-name').value = "";
-                document.getElementById('edit-email').value = "";
-                document.getElementById('edit-phone').value = "";
-            }
-            document.getElementById(id).style.display = 'block';
+        document.getElementById(id).style.display = 'block';
+
+        // Pre-fill the fields with current values when editing profile
+        if (id === 'edit-profile') {
+            document.getElementById('edit-name').value = document.getElementById('user-name').innerText;
+            document.getElementById('edit-email').value = document.getElementById('user-email').innerText;
+            document.getElementById('edit-phone').value = document.getElementById('user-phone').innerText;
+        }
+    }
+
+    function hidePopup(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function saveProfile() {
+        // Get values from input fields
+        const newName = document.getElementById('edit-name').value.trim();
+        const newEmail = document.getElementById('edit-email').value.trim();
+        const newPhone = document.getElementById('edit-phone').value.trim();
+
+        // Email validation regex
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        // Check if the email is valid
+        if (!emailPattern.test(newEmail)) {
+            alert("Please enter a valid email address.");
+            return; // Stop execution if email is invalid
         }
 
+        // Update displayed profile details
+        document.getElementById('user-name').innerText = newName;
+        document.getElementById('user-email').innerText = newEmail;
+        document.getElementById('user-phone').innerText = newPhone;
 
-        function hidePopup(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        function saveProfile() {
-            const nameInput = document.getElementById('edit-name').value.trim();
-            const emailInput = document.getElementById('edit-email').value.trim();
-            const phoneInput = document.getElementById('edit-phone').value.trim();
-            const fileInput = document.getElementById('edit-profile-pic');
-
-            // Update values only if new input is given
-            if (nameInput) document.getElementById('user-name').textContent = nameInput;
-            if (emailInput) document.getElementById('user-email').textContent = emailInput;
-            if (phoneInput) document.getElementById('user-phone').textContent = phoneInput;
-
-            // Handle profile picture upload
-            if (fileInput.files.length > 0) {
+        // Hide popup after saving
+        hidePopup('edit-profile');
+    }
+        function changeProfilePic(event) {
+            const file = event.target.files[0];
+            if (file) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    document.querySelector('.profile-img').src = e.target.result;
+                    document.getElementById('profile-pic').src = e.target.result;
                 };
-                reader.readAsDataURL(fileInput.files[0]);
-            }
-
-            hidePopup('edit-profile');
-        }
-   
-        function removeProfilePic() {
-            document.querySelector('.profile-img').src = "default-profile.png"; // Reset to default
-        }
-
-
-        function updatePassword() {
-            const newPassword = document.getElementById('new-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-            
-            if (newPassword && confirmPassword) {
-                if (newPassword === confirmPassword) {
-                    alert('Password updated successfully!');
-                    hidePopup('change-password');
-                } else {
-                    alert('Passwords do not match!');
-                }
-            } else {
-                alert('Please enter both password fields!');
+                reader.readAsDataURL(file);
             }
         }
     </script>
