@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview - Customer Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            background-color: #f4f4f9;
+        }
+    </style>
+    <script>
+        // Sample Orders Data
+        const orders = [
+            { id: "ORD-2024-001", status: "In Progress", size: "A4", pages: 25, type: "Color", progress: 2 },
+            { id: "ORD-2024-000", status: "Completed", size: "A3", pages: 10, type: "B&W", progress: 4 }
+        ];
+
+        function loadOverview() {
+            let orderList = "";
+            orders.forEach(order => {
+                orderList += `
+                    <div class="bg-gray-50 p-4 rounded cursor-pointer hover:bg-gray-100" onclick="showTracking('${order.id}')">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium">#${order.id}</span>
+                            <span class="px-3 py-1 rounded-full text-sm ${order.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">${order.status}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>Print Size: ${order.size}</div>
+                            <div>Pages: ${order.pages}</div>
+                            <div>Type: ${order.type}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById("orderSummary").innerHTML = orderList;
+        }
+
+        function showTracking(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            document.getElementById("popupTitle").innerText = `Tracking Order: #${order.id}`;
+            document.getElementById("progressBar").style.width = `${(order.progress / 4) * 100}%`;
+
+            let trackingSteps = ["Received", "Processing", "Printing", "Completed"];
+            let trackingHTML = trackingSteps.map((step, index) => `
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 ${index < order.progress ? "bg-green-500" : "bg-gray-300"} rounded-full flex items-center justify-center">
+                        ${index < order.progress ? '<i class="fas fa-check text-white"></i>' : index + 1}
+                    </div>
+                    <span class="text-sm mt-2">${step}</span>
+                </div>
+            `).join("");
+
+            document.getElementById("orderTracking").innerHTML = trackingHTML;
+            document.getElementById("trackingModal").classList.remove("hidden");
+        }
+
+        function closeTracking() {
+            document.getElementById("trackingModal").classList.add("hidden");
+        }
+
+        window.onload = loadOverview;
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Order Summary Section -->
+        <section class="mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4">Order Summary</h2>
+                <div id="orderSummary" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <!-- Order Tracking Popup -->
+        <div id="trackingModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+            <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                <h2 id="popupTitle" class="text-xl font-bold mb-4"></h2>
+
+                <!-- Progress Bar -->
+                <div class="relative flex items-center justify-between space-x-4 mb-4" id="orderTracking"></div>
+                <div class="w-full h-1 bg-gray-200 mt-4">
+                    <div id="progressBar" class="h-full bg-green-500 w-0"></div>
+                </div>
+
+                <!-- Close Button -->
+                <div class="mt-4 flex justify-end">
+                    <button onclick="closeTracking()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Overview Section -->
+        <section class="mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4">Payment Overview</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <span class="font-medium">#PAY-2024-001</span>
+                            <span class="text-sm text-gray-600 ml-2">Feb 15, 2024</span>
+                        </div>
+                        <span class="text-green-600 font-medium">$45.00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <span class="font-medium">#PAY-2024-000</span>
+                            <span class="text-sm text-gray-600 ml-2">Feb 10, 2024</span>
+                        </div>
+                        <span class="text-green-600 font-medium">$32.50</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feedback Section -->
+        <section>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4">Leave Feedback</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="order" class="block text-sm font-medium text-gray-700 mb-1">Select Order</label>
+                        <select id="order" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <option value="ORD-2024-000">#ORD-2024-000</option>
+                            <option value="ORD-2024-001">#ORD-2024-001</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                        <div class="flex space-x-2">
+                            <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                            <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                            <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                            <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                            <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
+                        <textarea id="feedback" rows="4" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Share your experience with us..."></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <i class="fas fa-paper-plane mr-2"></i> Submit Feedback
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>
