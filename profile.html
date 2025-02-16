@@ -43,7 +43,14 @@
         .sidebar ul li a:hover {
             background-color: #008e9d;
         }
+        .dashboard-link {
+            text-decoration: none; /* Removes underline */
+        }
 
+        .dashboard-heading {
+            text-align: center;
+            color: white;
+        }
         /* General Body Styles */
         body {
             font-family: Arial, sans-serif;
@@ -179,7 +186,9 @@
 <body>
 
     <div class="sidebar">
-        <h2>Dashboard</h2>
+        <a href="dashboard" class="dashboard-link">
+            <h2 class="dashboard-heading">Dashboard</h2>
+        </a>
         <ul>
             <li><a href="overview">Overview</a></li>
             <li><a href="orders">Orders</a></li>

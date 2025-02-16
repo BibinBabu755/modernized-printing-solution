@@ -62,6 +62,15 @@
             border-radius: 30px;
             text-align: center;
         }
+        .dashboard-link {
+            text-decoration: none; /* Removes underline */
+        }
+
+        .dashboard-heading {
+            text-align: center;
+            color: white;
+        }
+
 
         .card {
             background-color: white;
@@ -98,7 +107,10 @@
 
 <body>
     <div class="sidebar">
-        <h2>Dashboard</h2>
+        <a href="dashboard" class="dashboard-link">
+            <h2 class="dashboard-heading">Dashboard</h2>
+        </a>
+        
         <ul>
             <li><a href="overview">Overview</a></li>
             <li><a href="orders">Orders</a></li>

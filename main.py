@@ -73,6 +73,7 @@ def dashboard():
     except FileNotFoundError:
         return jsonify({"message": "Welcome to printing page"}), 200
     
+    
 @app.route("/admin", methods=["GET"])
 def admin():
     try:

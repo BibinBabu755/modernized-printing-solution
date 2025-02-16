@@ -77,6 +77,15 @@
             text-align: center;
         }
 
+        .dashboard-link {
+            text-decoration: none; /* Removes underline */
+        }
+
+        .dashboard-heading {
+            text-align: center;
+            color: white;
+        }
+
         .notification-tab {
             margin-top: 20px;
             background: white;
@@ -134,13 +143,15 @@
 <body>
 
     <div class="sidebar">
-        <h2>Dashboard</h2>
+        <a href="dashboard" class="dashboard-link">
+            <h2 class="dashboard-heading">Dashboard</h2>
+        </a>
         <ul>
             <li><a href="overview">Overview</a></li>
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications" >Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><a href="#logout">Logout</a></li>
+            <li><a href="logout">Logout</a></li>
         </ul>
     </div>
 
