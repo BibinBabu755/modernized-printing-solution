@@ -136,6 +136,22 @@ def pixel_img():
         return send_file("pixelcut-export-Photoroom_upscaled.png", mimetype="image/png")
     except FileNotFoundError:
         return jsonify({"message": "Welcome to the printing page. The requested image was not found."}), 404
+    
+@app.route("/api/logout", methods=["POST"])
+def logout():
+    try:
+        # Clear the session
+        session.pop('user_id', None)
+        return jsonify({"message": "Logged out successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+    
+@app.route("/logout", methods=["GET"])
+def logout_page():
+    try:
+        return open("index.html").read(), 200
+    except FileNotFoundError:
+        return jsonify({"error": "Login page not found"}), 404
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
