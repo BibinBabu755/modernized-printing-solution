@@ -39,6 +39,9 @@ def login():
         if not data or not all(key in data for key in ("email", "password")):
             return jsonify({"error": "Invalid input"}), 400
 
+        if data["email"] == "admin@admin" and data["password"] == "admin":
+            return jsonify({"error": "Admin"}, 200)
+
         user = users.find_one({"email": data["email"]})
         if not user or not check_password_hash(user["password"], data["password"]):
             return jsonify({"error": "Invalid credentials"}), 401
@@ -67,6 +70,13 @@ def signup_page():
 def dashboard():
     try:
         return open("dashboard.html").read(), 200
+    except FileNotFoundError:
+        return jsonify({"message": "Welcome to printing page"}), 200
+    
+@app.route("/admin", methods=["GET"])
+def admin():
+    try:
+        return open("admin.html").read(), 200
     except FileNotFoundError:
         return jsonify({"message": "Welcome to printing page"}), 200
 
