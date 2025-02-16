@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            background-color: #f4f4f9;
+        }
+
+    .header {
+        color: white;
+        padding: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        position:-ms-page;
+        width: 30%;
+        top: 0;
+        left: 0;
+        margin-left: 270px;
+        padding: 20px;
+        color: #ffffff;
+        background-color:#00a6ff6d;
+        border-radius: 30px;
+        text-align: center;
+    }
+
+body {
+    padding-top: 60px; /* Adjust to match the header height */
+}
+
+
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+        }
+
+        .order-status, .payment-status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .order-status.processing { color: orange; }
+        .order-status.completed { color: green; }
+        .payment-status.pending { color: red; }
+        .payment-status.confirmed { color: green; }
+
+        .confirm-btn {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .confirm-btn:hover {
+            background-color: #218838;
+        }
+
+        .order-list {
+            text-align: left;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+        }
+    </style>
+    <script>
+        function updateOrderStatus(orderId, status) {
+            document.getElementById(`order-status-${orderId}`).innerText = status;
+            document.getElementById(`order-status-${orderId}`).className = `order-status ${status.toLowerCase()}`;
+        }
+
+        function confirmPayment(orderId) {
+            alert(`Payment for Order ID ${orderId} has been confirmed.`);
+            document.getElementById(`payment-status-${orderId}`).innerText = "Payment Confirmed";
+            document.getElementById(`payment-status-${orderId}`).className = "payment-status confirmed";
+        }
+    </script>
+</head>
+<body>
+    <div class="header">Owner Dashboard</div>
+
+    <div class="dashboard-container">
+        <div class="card" id="overview">
+            <h2>Overview</h2>
+            <p>Quick stats about business performance.</p>
+        </div>
+
+        <div class="card" id="customers">
+            <h2>Manage Customers</h2>
+            <p>View and handle customer accounts.</p>
+        </div>
+
+        <div class="card" id="orders">
+            <h2>Orders</h2>
+            <p>Track and manage incoming orders.</p>
+            <div class="order-list">
+                <div class="order-item">Order ID: 101 - <span class="order-status processing" id="order-status-101">Processing</span> <button class="confirm-btn" onclick="updateOrderStatus(101, 'Completed')">Mark as Completed</button></div>
+                <div class="order-item">Order ID: 102 - <span class="order-status processing" id="order-status-102">Processing</span> <button class="confirm-btn" onclick="updateOrderStatus(102, 'Completed')">Mark as Completed</button></div>
+            </div>
+        </div>
+
+        <div class="card" id="payments">
+            <h2>Payments</h2>
+            <p>Confirm and manage payments.</p>
+            <div class="order-list">
+                <div class="order-item">Order ID: 101 - <span class="payment-status pending" id="payment-status-101">Pending</span> <button class="confirm-btn" onclick="confirmPayment(101)">Confirm Payment</button></div>
+                <div class="order-item">Order ID: 102 - <span class="payment-status pending" id="payment-status-102">Pending</span> <button class="confirm-btn" onclick="confirmPayment(102)">Confirm Payment</button></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
