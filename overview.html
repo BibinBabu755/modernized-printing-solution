@@ -23,6 +23,106 @@
             text-align: center;
             color: white;
         }
+
+        .sidebar {
+            width: 150px;
+            background-color: #00a6ff6d;
+            height: 100vh;
+            color: white;
+            position: fixed;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            font-size:17px;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #008e9d;
+        }
+
+        button:hover {
+            background-color: #008e9d;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+
+        .content h1 {
+            color: #ffffff;
+            background-color:#00a6ff6d;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+        }
+
+        .card p {
+            color: #666;
+        }
+        
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .content {
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .btn {
+            background-color: #00a6ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+            font-size: 17px;
+            width: 100%; 
+            text-align: left;
+        }
     </style>
     <script>
         // Sample Orders Data
@@ -80,94 +180,110 @@
     </script>
 </head>
 <body class="bg-gray-100">
-    <div class="container mx-auto px-4 py-8">
+    <div class="sidebar">
+        <a href="dashboard" class="dashboard-link">
+            <h2 class="dashboard-heading">Dashboard</h2>
+        </a>
+        
+        <ul>
+            <li><a href="overview">Overview</a></li>
+            <li><a href="orders">Orders</a></li>
+            <li><a href="notifications">Notifications</a></li>
+            <li><a href="profile">Profile</a></li>
+            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
+        </ul>
+    </div>
 
-        <!-- Order Summary Section -->
-        <section class="mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-4">Order Summary</h2>
-                <div id="orderSummary" class="space-y-4"></div>
-            </div>
-        </section>
+    <div class="content">
+        <div class="container mx-auto px-4 py-8">
 
-        <!-- Order Tracking Popup -->
-        <div id="trackingModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
-            <div class="bg-white p-6 rounded-lg shadow-md w-96">
-                <h2 id="popupTitle" class="text-xl font-bold mb-4"></h2>
-
-                <!-- Progress Bar -->
-                <div class="relative flex items-center justify-between space-x-4 mb-4" id="orderTracking"></div>
-                <div class="w-full h-1 bg-gray-200 mt-4">
-                    <div id="progressBar" class="h-full bg-green-500 w-0"></div>
+            <!-- Order Summary Section -->
+            <section class="mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Order Summary</h2>
+                    <div id="orderSummary" class="space-y-4"></div>
                 </div>
+            </section>
 
-                <!-- Close Button -->
-                <div class="mt-4 flex justify-end">
-                    <button onclick="closeTracking()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
+            <!-- Order Tracking Popup -->
+            <div id="trackingModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                    <h2 id="popupTitle" class="text-xl font-bold mb-4"></h2>
 
-        <!-- Payment Overview Section -->
-        <section class="mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-4">Payment Overview</h2>
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
-                        <div>
-                            <span class="font-medium">#PAY-2024-001</span>
-                            <span class="text-sm text-gray-600 ml-2">Feb 15, 2024</span>
-                        </div>
-                        <span class="text-green-600 font-medium">$45.00</span>
+                    <!-- Progress Bar -->
+                    <div class="relative flex items-center justify-between space-x-4 mb-4" id="orderTracking"></div>
+                    <div class="w-full h-1 bg-gray-200 mt-4">
+                        <div id="progressBar" class="h-full bg-green-500 w-0"></div>
                     </div>
-                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
-                        <div>
-                            <span class="font-medium">#PAY-2024-000</span>
-                            <span class="text-sm text-gray-600 ml-2">Feb 10, 2024</span>
-                        </div>
-                        <span class="text-green-600 font-medium">$32.50</span>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Feedback Section -->
-        <section>
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-4">Leave Feedback</h2>
-                <div class="space-y-4">
-                    <div>
-                        <label for="order" class="block text-sm font-medium text-gray-700 mb-1">Select Order</label>
-                        <select id="order" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <option value="ORD-2024-000">#ORD-2024-000</option>
-                            <option value="ORD-2024-001">#ORD-2024-001</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                        <div class="flex space-x-2">
-                            <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                            <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                            <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                            <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                            <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
-                        <textarea id="feedback" rows="4" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Share your experience with us..."></textarea>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                            <i class="fas fa-paper-plane mr-2"></i> Submit Feedback
+                    <!-- Close Button -->
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="closeTracking()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                            Close
                         </button>
                     </div>
                 </div>
             </div>
-        </section>
 
+            <!-- Payment Overview Section -->
+            <section class="mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Payment Overview</h2>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                            <div>
+                                <span class="font-medium">#PAY-2024-001</span>
+                                <span class="text-sm text-gray-600 ml-2">Feb 15, 2024</span>
+                            </div>
+                            <span class="text-green-600 font-medium">$45.00</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                            <div>
+                                <span class="font-medium">#PAY-2024-000</span>
+                                <span class="text-sm text-gray-600 ml-2">Feb 10, 2024</span>
+                            </div>
+                            <span class="text-green-600 font-medium">$32.50</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feedback Section -->
+            <section>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Leave Feedback</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="order" class="block text-sm font-medium text-gray-700 mb-1">Select Order</label>
+                            <select id="order" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <option value="ORD-2024-000">#ORD-2024-000</option>
+                                <option value="ORD-2024-001">#ORD-2024-001</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                            <div class="flex space-x-2">
+                                <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
+                            <textarea id="feedback" rows="4" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Share your experience with us..."></textarea>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                                <i class="fas fa-paper-plane mr-2"></i> Submit Feedback
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
     </div>
 </body>
 </html>
