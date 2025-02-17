@@ -63,6 +63,7 @@
             max-width: 83%;
             padding: 20px;
             align-items: center;
+            text-decoration: none;
         }
 
         .content h1 {
@@ -88,21 +89,27 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             transition: transform 0.3s;
-        
+            text-decoration: none;
         }
 
         .card h2 {
             margin: 0 0 10px;
+            color: black;
+            text-decoration: none;
         }
 
         .card p {
             color: #666;
+            text-decoration: none;
         }
         
         .card:hover {
             transform: scale(1.05);
         }
 
+        .card-link {
+            text-decoration: none; /* Removes underline */
+        }
         /* animation */
         @keyframes fadeIn {
             from {
@@ -155,25 +162,34 @@
     <div class="content">
         <h1>Welcome to your Dashboard</h1>
 
-        <div class="card" id="overview">
+        <a href="overview" class="card-link">
+            <div class="card" id="overview">
             <h2>Overview</h2>
             <p>Quick stats about your account and activity.</p>
-        </div>
+            </div>
+        </a>
 
-        <div class="card" id="orders">
-            <h2>Orders</h2>
-            <p>View and manage your orders here.</p>
-        </div>
+        <a href="orders" class="card-link">
+            <div class="card" id="orders">
+                <h2>Orders</h2>
+                <p>View and manage your orders here.</p>
+            </div>
+        </a>
 
-        <div class="card" id="notifications">
-            <h2>Notifications</h2>
-            <p>Check your latest notifications and updates.</p>
-        </div>
+        <a href="notifications" class="card-link">
+            <div class="card" id="notifications">
+                <h2>Notifications</h2>
+                <p>Check your latest notifications and updates.</p>
+            </div>
+        </a>
 
-        <div class="card" id="profile">
-            <h2>Profile</h2>
-            <p>Manage your account settings and preferences.</p>
-        </div>
+        <a href="profile" class="card-link">
+            <div class="card" id="profile">
+                <h2>Profile</h2>
+                <p>Manage your account settings and preferences.</p>
+            </div>
+        </a>
+
     </div>
     <script>
         if (!localStorage.getItem("email")) {
