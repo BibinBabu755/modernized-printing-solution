@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,27 +15,60 @@
             background-color: #f4f4f9;
         }
 
-    .header {
-        color: white;
-        padding: 15px;
-        font-size: 24px;
-        font-weight: bold;
-        position:-ms-page;
-        width: 30%;
-        top: 0;
-        left: 0;
-        margin-left: 270px;
-        padding: 20px;
-        color: #ffffff;
-        background-color:#00a6ff6d;
-        border-radius: 30px;
-        text-align: center;
-    }
+        .header {
+            color: white;
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+            width: 30%;
+            top: 0;
+            left: 0;
+            margin-left: 270px;
+            padding: 20px;
+            color: #ffffff;
+            background-color:#00a6ff6d;
+            border-radius: 30px;
+            text-align: center;
+        }
 
-body {
-    padding-top: 60px; /* Adjust to match the header height */
-}
+        #logoutBtn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
 
+        #logoutBtn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        #logoutBtn span {
+            font-size: 16px;
+        }
+
+        #logoutBtn svg {
+            transition: transform 0.3s ease;
+        }
+
+        #logoutBtn:hover svg {
+            transform: translateX(3px);
+        }
+
+        body {
+            padding-top: 60px;
+        }
 
         .dashboard-container {
             display: flex;
@@ -99,51 +133,340 @@ body {
             border-bottom: 1px solid #ddd;
             padding: 8px 0;
         }
-    </style>
-    <script>
-        function updateOrderStatus(orderId, status) {
-            document.getElementById(`order-status-${orderId}`).innerText = status;
-            document.getElementById(`order-status-${orderId}`).className = `order-status ${status.toLowerCase()}`;
-        }
 
-        function confirmPayment(orderId) {
-            alert(`Payment for Order ID ${orderId} has been confirmed.`);
-            document.getElementById(`payment-status-${orderId}`).innerText = "Payment Confirmed";
-            document.getElementById(`payment-status-${orderId}`).className = "payment-status confirmed";
+        .file-list {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
         }
-    </script>
+    </style>
 </head>
 <body>
-    <div class="header">Owner Dashboard</div>
+    <div class="header">
+        Owner Dashboard
+        <button id="logoutBtn" onclick="window.location.href='login'">
+            <span>Logout</span>
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/>
+            </svg>
+        </button>
+    </div>
 
     <div class="dashboard-container">
         <div class="card" id="overview">
             <h2>Overview</h2>
-            <p>Quick stats about business performance.</p>
+            <div style="height: 300px; position: relative;">
+                <canvas id="ordersChart" style="max-width: 400px; margin: auto;"></canvas>
+                <div id="chartError" style="display: none; color: red; text-align: center; margin-top: 20px;">
+                    Unable to load chart data
+                </div>
+            </div>
         </div>
 
         <div class="card" id="customers">
             <h2>Manage Customers</h2>
-            <p>View and handle customer accounts.</p>
+            <div class="customer-list" id="customers-list">
+                <div class="customer-header">
+                    <span>Name</span>
+                    <span>Last Order</span>
+                    <span>Priority</span>
+                    <span>Actions</span>
+                </div>
+                <!-- Customers will be populated here by JavaScript -->
+            </div>
+            <style>
+                .customer-list {
+                    margin-top: 20px;
+                }
+                .customer-header {
+                    display: flex;
+                    font-weight: bold;
+                    padding: 10px 0;
+                    border-bottom: 2px solid #ddd;
+                }
+                .customer-header span {
+                    flex: 1;
+                    text-align: center;
+                }
+                .customer-item {
+                    display: flex;
+                    align-items: center;
+                    padding: 10px 0;
+                    border-bottom: 1px solid #eee;
+                }
+                .customer-item > div {
+                    flex: 1;
+                    text-align: center;
+                }
+                .priority-select {
+                    padding: 5px;
+                    border-radius: 4px;
+                    border: 1px solid #ddd;
+                }
+                .action-buttons button {
+                    margin: 0 5px;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    border: none;
+                    cursor: pointer;
+                }
+            </style>
+            <script>
+                async function fetchCustomers() {
+                    try {
+                        const response = await fetch('/get_customers');
+                        const data = await response.json();
+                        displayCustomers(data.customers);
+                    } catch ( error ) {
+                        console.error('Error fetching customers:', error);
+                    }
+                }
+
+                function displayCustomers(customers) {
+                    const container = document.getElementById('customers-list');
+                    // Clear existing content except header
+                    while (container.children.length > 1) {
+                        container.removeChild(container.lastChild);
+                    }
+
+                    customers.forEach(customer => {
+                        const item = document.createElement('div');
+                        item.className = 'customer-item';
+                        
+                        const lastOrder = new Date(customer.last_order).toLocaleString();
+                        
+                        item.innerHTML = `
+                            <div>${customer.firstName} ${customer.lastName}</div>
+                            <div>${lastOrder}</div>
+                            <div>
+                                <select class="priority-select" 
+                                        data-email="${customer.email}"
+                                        onchange="updatePriority('${customer.email}', this.value)">
+                                    <option value="1" ${customer.priority == 1 ? 'selected' : ''}>Low</option>
+                                    <option value="2" ${customer.priority == 2 ? 'selected' : ''}>Medium</option>
+                                    <option value="3" ${customer.priority == 3 ? 'selected' : ''}>High</option>
+                                </select>
+                            </div>
+                            <div class="action-buttons">
+                                <button onclick="editCustomer('${customer.email}')">Edit</button>
+                                <button onclick="deleteCustomer('${customer.email}')">Delete</button>
+                            </div>
+                        `;
+                        container.appendChild(item);
+                    });
+                }
+
+                async function updatePriority(email, priority) {
+                    try {
+                        const response = await fetch('/update_priority', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({email, priority})
+                        });
+                        const result = await response.json();
+                        if (result.message) {
+                            showToast('Priority updated successfully');
+                        }
+                    } catch (error) {
+                        console.error('Error updating priority:', error);
+                        showToast('Error updating priority');
+                    }
+                }
+
+                function showToast(message) {
+                    const toast = document.createElement('div');
+                    toast.className = 'toast';
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                }
+
+                // Fetch customers when page loads
+                fetchCustomers();
+            </script>
         </div>
 
         <div class="card" id="orders">
             <h2>Orders</h2>
             <p>Track and manage incoming orders.</p>
-            <div class="order-list">
-                <div class="order-item">Order ID: 101 - <span class="order-status processing" id="order-status-101">Processing</span> <button class="confirm-btn" onclick="updateOrderStatus(101, 'Completed')">Mark as Completed</button></div>
-                <div class="order-item">Order ID: 102 - <span class="order-status processing" id="order-status-102">Processing</span> <button class="confirm-btn" onclick="updateOrderStatus(102, 'Completed')">Mark as Completed</button></div>
+            <div class="order-list" id="orders-list">
+                <!-- Orders will be populated here by JavaScript -->
             </div>
         </div>
 
         <div class="card" id="payments">
             <h2>Payments</h2>
             <p>Confirm and manage payments.</p>
-            <div class="order-list">
-                <div class="order-item">Order ID: 101 - <span class="payment-status pending" id="payment-status-101">Pending</span> <button class="confirm-btn" onclick="confirmPayment(101)">Confirm Payment</button></div>
-                <div class="order-item">Order ID: 102 - <span class="payment-status pending" id="payment-status-102">Pending</span> <button class="confirm-btn" onclick="confirmPayment(102)">Confirm Payment</button></div>
+            <div class=" order-list" id="payments-list">
+                <!-- Payments will be populated here by JavaScript -->
             </div>
         </div>
     </div>
+
+    <script>
+        async function fetchOrders() {
+            try {
+                const response = await fetch('/get_all_orders');
+                const data = await response.json();
+                displayOrders(data.orders);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            }
+        }
+
+        function displayOrders(orders) {
+            const ordersList = document.getElementById('orders-list');
+            const paymentsList = document.getElementById('payments-list');
+            
+            ordersList.innerHTML = '';
+            paymentsList.innerHTML = '';
+
+            orders.forEach(order => {
+                // Create order item
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item';
+                
+                // Order details
+                const orderDetails = document.createElement('div');
+                orderDetails.innerHTML = `
+                    <strong>Order ID:</strong> ${order._id}<br>
+                    <strong>Customer:</strong> ${order.user_name || 'Unknown'}<br>
+                    <strong>Status:</strong> <span class="order-status ${order.status.toLowerCase()}" id="order-status-${order._id}">${order.status}</span>
+                    <button class="confirm-btn" onclick="updateOrderStatus('${order._id}', 'Completed')">Mark as Completed</button>
+                `;
+                
+                // File list
+                const fileList = document.createElement('div');
+                fileList.className = 'file-list';
+                fileList.innerHTML = '<strong>Files:</strong><br>' + 
+                    order.files.map(file => 
+                        `<a href="${file.url}, target="_blank">${file.filename}</a>`
+                    ).join('<br>');
+
+                orderItem.appendChild(orderDetails);
+                orderItem.appendChild(fileList);
+                ordersList.appendChild(orderItem);
+
+                // Create payment item
+                const paymentItem = document.createElement('div');
+                paymentItem.className = 'order-item';
+                paymentItem.innerHTML = `
+                    Order ID: ${order._id} - 
+                    <span class="payment-status ${order.paymentStatus || 'pending'}" id="payment-status-${order._id}">${order.paymentStatus || 'Pending'}</span> 
+                    <button class="confirm-btn" onclick="confirmPayment('${order._id}')">Confirm Payment</button>
+                `;
+                paymentsList.appendChild(paymentItem);
+            });
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const response = await fetch('/update_order_status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ orderId, status })
+                });
+                const result = await response.json();
+                if (result.message) {
+                    const statusElement = document.getElementById(`order-status-${orderId}`);
+                    statusElement.className = `order-status ${status.toLowerCase()}`;
+                    statusElement.textContent = status;
+                    showToast('Order status updated successfully');
+                }
+            } catch (error) {
+                console.error('Error updating order status:', error);
+                showToast('Error updating order status');
+            }
+        }
+
+        async function confirmPayment(orderId) {
+            try {
+                const response = await fetch('/confirm_payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ orderId })
+                });
+                const result = await response.json();
+                if (result.message) {
+                    const paymentElement = document.getElementById(`payment-status-${orderId}`);
+                    paymentElement.className = 'payment-status confirmed';
+                    paymentElement.textContent = 'Confirmed';
+                    showToast('Payment confirmed successfully');
+                }
+            } catch (error) {
+                console.error('Error confirming payment:', error);
+                showToast('Error confirming payment');
+            }
+        }
+
+        // Fetch orders when page loads
+        window.onload = function() {
+            fetchOrders();
+            fetchOrderStats();
+        }
+
+        async function fetchOrderStats() {
+            try {
+                const response = await fetch('/get_order_stats');
+                if (!response.ok) throw new Error('Failed to fetch stats');
+                const data = await response.json();
+                if (!data || !data.totalOrders) throw new Error('Invalid data format');
+                renderChart(data);
+            } catch (error) {
+                console.error('Error fetching order stats:', error);
+                document.getElementById('chartError').style.display = 'block';
+                // Render chart with default data
+                renderChart({
+                    totalOrders: 1,
+                    completedOrders: 0
+                });
+            }
+        }
+
+        function renderChart(stats) {
+            const ctx = document.getElementById('ordersChart').getContext('2d');
+            // Destroy existing chart instance if it exists
+            if (window.ordersChartInstance) {
+                window.ordersChartInstance.destroy();
+            }
+            window.ordersChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Received', 'Completed'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: [stats.totalOrders, stats.completedOrders],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Orders Overview'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>
