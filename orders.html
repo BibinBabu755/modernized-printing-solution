@@ -105,6 +105,11 @@
             cursor: pointer;
         }
 
+        .submit-btn {
+            background-color: red;
+        }
+
+
         button:hover {
             background-color: #218838;
         }
@@ -193,8 +198,7 @@
                     <script>fileCount = 0; addFileInput();</script>
                 </div>
                 <button type="button" onclick="addFileInput()">Add File</button>
-                <button type="submit" name="action" value="placeOrder">Place Order</button>
-                <button type="submit" name="action" value="saveDraft">Save as Draft</button>
+                <button type="submit" name="action" value="placeOrder" class="submit-btn">Place Order</button>
             </form>
         </div>
     </div>
