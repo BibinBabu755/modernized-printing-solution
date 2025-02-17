@@ -155,6 +155,21 @@
         .btn_logout:hover {
             background-color: #008e9d;
         }
+
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .content {
+            animation: fadeIn .5s ease-in-out;
+        }
     </style>
     <script>
         let fileCount = 1;
