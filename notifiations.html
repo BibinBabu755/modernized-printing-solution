@@ -156,31 +156,36 @@
             <ul id="permanentNotificationList"></ul>
             <button id="clearNotifications" onclick="clearAllNotifications()">Clear All</button>
         </div>
+
+        <div class="notification-count" id="notificationCount">0</div>
     </div>
 
     <script>
         
         let unreadCount = 0;
 
-        function getFormattedDateTime() {
-            const now = new Date();
-            return now.toLocaleString();
+        function getFormattedDateTime(timestamp) {
+            const date = new Date(timestamp);
+            // get ist tz time
+            date.setHours(date.getHours() - 5);
+            date.setMinutes(date.getMinutes() - 30);
+            return date.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
         }
 
-        function addNotification(type) {
+        function addNotification(type, timestamp) {
             const permanentNotificationList = document.getElementById("permanentNotificationList");
             const li = document.createElement("li");
-            const timestamp = getFormattedDateTime();
+            const ts = getFormattedDateTime(timestamp)
             let message = "";
 
             if (type === "submitted") {
-                message = "📩 Your order has been submitted - " + timestamp;
+                message = "📩 Your order has been submitted - " + ts;
                 li.classList.add("submitted");
             } else if (type === "processing") {
-                message = "⚙ Your order is processing - " + timestamp;
+                message = "⚙ Your order is processing - " + ts;
                 li.classList.add("processing");
             } else if (type === "completed") {
-                message = "🎉 Your order is completed! - " + timestamp;
+                message = "🎉 Your order is completed! - " + ts;
                 li.classList.add("completed");
             }
 
@@ -210,9 +215,23 @@
             document.getElementById("notificationCount").textContent = unreadCount;
         }
 
-        setTimeout(() => addNotification("submitted"), 2000);
-        setTimeout(() => addNotification("processing"), 5000);
-        setTimeout(() => addNotification("completed"), 8000);
+        function initPage() {
+            fetch("get_orders?email=" + localStorage.getItem("email"))
+                .then(response => response.json())
+                .then(data => {
+                    data.orders.forEach(notification => {
+                        addNotification(notification.status, notification.timestamp);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching notifications:", error);
+                });
+        }
+
+        // setTimeout(() => addNotification("submitted"), 2000);
+        // setTimeout(() => addNotification("processing"), 5000);
+        // setTimeout(() => addNotification("completed"), 8000);
+        initPage();
     </script>
 </body>
 </html>

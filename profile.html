@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,14 +44,17 @@
         .sidebar ul li a:hover {
             background-color: #008e9d;
         }
+
         .dashboard-link {
-            text-decoration: none; /* Removes underline */
+            text-decoration: none;
+            /* Removes underline */
         }
 
         .dashboard-heading {
             text-align: center;
             color: white;
         }
+
         /* General Body Styles */
         body {
             font-family: Arial, sans-serif;
@@ -79,11 +83,11 @@
         }
 
         .profile-img {
-            width: 20vw;         
-            height: 20vw;        
-            max-width: 150px;    
-            max-height: 150px;   
-            border-radius: 50%;  
+            width: 20vw;
+            height: 20vw;
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 50%;
             border: 3px solid #ffffff;
             object-fit: cover;
         }
@@ -148,7 +152,8 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
-            width: 320px;  /* Set a fixed width */
+            width: 320px;
+            /* Set a fixed width */
         }
 
         /* Styling the Labels & Input Fields */
@@ -156,16 +161,17 @@
             display: block;
             text-align: left;
             font-weight: bold;
-            margin-bottom: 5px; 
+            margin-bottom: 5px;
         }
 
         .popup input {
-            width: calc(100% - 20px); 
+            width: calc(100% - 20px);
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             display: block;
-            margin-bottom: 15px; /* Equal spacing after input */
+            margin-bottom: 15px;
+            /* Equal spacing after input */
         }
 
         /* Adjust Button Layout */
@@ -179,10 +185,9 @@
             flex: 1;
             margin: 5px;
         }
-
-
     </style>
 </head>
+
 <body>
 
     <div class="sidebar">
@@ -250,43 +255,55 @@
 
     <script>
         function showPopup(id) {
-        document.getElementById(id).style.display = 'block';
+            document.getElementById(id).style.display = 'block';
 
-        // Pre-fill the fields with current values when editing profile
-        if (id === 'edit-profile') {
-            document.getElementById('edit-name').value = document.getElementById('user-name').innerText;
-            document.getElementById('edit-email').value = document.getElementById('user-email').innerText;
-            document.getElementById('edit-phone').value = document.getElementById('user-phone').innerText;
-        }
-    }
-
-    function hidePopup(id) {
-        document.getElementById(id).style.display = 'none';
-    }
-
-    function saveProfile() {
-        // Get values from input fields
-        const newName = document.getElementById('edit-name').value.trim();
-        const newEmail = document.getElementById('edit-email').value.trim();
-        const newPhone = document.getElementById('edit-phone').value.trim();
-
-        // Email validation regex
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-        // Check if the email is valid
-        if (!emailPattern.test(newEmail)) {
-            alert("Please enter a valid email address.");
-            return; // Stop execution if email is invalid
+            // Pre-fill the fields with current values when editing profile
+            if (id === 'edit-profile') {
+                document.getElementById('edit-name').value = document.getElementById('user-name').innerText;
+                document.getElementById('edit-email').value = document.getElementById('user-email').innerText;
+                document.getElementById('edit-phone').value = document.getElementById('user-phone').innerText;
+            }
         }
 
-        // Update displayed profile details
-        document.getElementById('user-name').innerText = newName;
-        document.getElementById('user-email').innerText = newEmail;
-        document.getElementById('user-phone').innerText = newPhone;
+        function hidePopup(id) {
+            document.getElementById(id).style.display = 'none';
+        }
 
-        // Hide popup after saving
-        hidePopup('edit-profile');
-    }
+        function saveProfile() {
+            // Get values from input fields
+            const newName = document.getElementById('edit-name').value.trim();
+            const newEmail = document.getElementById('edit-email').value.trim();
+            const newPhone = document.getElementById('edit-phone').value.trim();
+
+            // Email validation regex
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            // Check if the email is valid
+            if (!emailPattern.test(newEmail)) {
+                alert("Please enter a valid email address.");
+                return; // Stop execution if email is invalid
+            }
+
+            // Update displayed profile details
+            document.getElementById('user-name').innerText = newName;
+            document.getElementById('user-email').innerText = newEmail;
+            document.getElementById('user-phone').innerText = newPhone;
+
+            fetch("/update_user", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: newEmail,
+                    name: newName,
+                    phone: newPhone
+                })
+            });
+
+            // Hide popup after saving
+            hidePopup('edit-profile');
+        }
         function changeProfilePic(event) {
             const file = event.target.files[0];
             if (file) {
@@ -295,8 +312,30 @@
                     document.getElementById('profile-pic').src = e.target.result;
                 };
                 reader.readAsDataURL(file);
+                const formData = new FormData();
+                formData.append("email", localStorage.getItem("email"));
+                formData.append("file", file);
+
+                fetch("/update_pfp", {
+                    method: "POST",
+                    body: formData
+                });
             }
         }
+
+        function initPage() {
+            fetch("/get_user?email=" + localStorage.getItem("email"))
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("user-name").innerText = data.user.firstName + " " + data.user.lastName;
+                    document.getElementById("user-email").innerText = data.user.email;
+                    document.getElementById("user-phone").innerText = data.user.phone;
+                    document.getElementById("profile-pic").src = data.user.profilePicture;
+                });
+        }
+
+        document.onload = initPage();
     </script>
 </body>
+
 </html>

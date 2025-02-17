@@ -51,6 +51,10 @@
             background-color: #008e9d;
         }
 
+        button:hover {
+            background-color: #008e9d;
+        }
+
         .content {
             margin-left: 270px;
             padding: 20px;
@@ -102,6 +106,20 @@
         .content {
             animation: fadeIn 2s ease-in-out;
         }
+
+        .btn {
+            background-color: #00a6ff;
+            color: white;
+            /*padding: 10px 20px;*/
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+        }
     </style>
 </head>
 
@@ -116,7 +134,7 @@
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications" >Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><a href="logout">Logout</a></li>
+            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
         </ul>
     </div>
 
@@ -143,6 +161,11 @@
             <p>Manage your account settings and preferences.</p>
         </div>
     </div>
+    <script>
+        if (!localStorage.getItem("email")) {
+            window.location.href = "/login";
+        }
+    </script>
 </body>
 
 </html>
