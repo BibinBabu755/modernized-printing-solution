@@ -39,6 +39,7 @@
             padding: 10px;
             border-radius: 8px;
             transition: background-color 0.3s;
+            font-size:17px;
         }
 
         .sidebar ul li a:hover {
@@ -185,6 +186,26 @@
             flex: 1;
             margin: 5px;
         }
+
+        .btn_logout {
+            background-color: #00a6ff;
+            color: white;
+            /*padding: 10px 20px;*/
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+            font-size: 17px;
+            width: 100%; 
+            text-align: left;
+        }
+        .btn_logout:hover {
+            background-color: #008e9d;
+        }
     </style>
 </head>
 
@@ -199,7 +220,7 @@
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications">Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><a href="logout">Logout</a></li>
+            <li><button class="btn_logout" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
         </ul>
     </div>
 
@@ -212,10 +233,9 @@
             <input type="file" id="edit-profile-pic" accept="image/*" onchange="changeProfilePic(event)">
         </div>
 
-        <h3 id="user-name">John Doe</h3>
-        <p class="info"><strong>Email:</strong> <span id="user-email">johndoe@example.com</span></p>
-        <p class="info"><strong>Phone:</strong> <span id="user-phone">+123 456 7890</span></p>
-        <p class="info"><strong>Joined:</strong> January 2023</p>
+        <h3 id="user-name"></h3>
+        <p class="info"><strong>Email:</strong> <span id="user-email"></span></p>
+        <p class="info"><strong>Phone:</strong> <span id="user-phone"></span></p>
         <button class="btn" onclick="showPopup('edit-profile')">Edit Profile</button>
         <button class="btn" onclick="showPopup('change-password')">Change Password</button>
     </div>
@@ -335,6 +355,10 @@
         }
 
         document.onload = initPage();
+        
+        if (!localStorage.getItem("email")) {
+            window.location.href = "/login";
+        }
     </script>
 </body>
 

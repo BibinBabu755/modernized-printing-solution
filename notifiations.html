@@ -45,6 +45,7 @@
             padding: 10px;
             border-radius: 8px;
             transition: background-color 0.3s;
+            font-size:17px;
         }
 
         .sidebar ul li a:hover {
@@ -132,6 +133,26 @@
         #clearNotifications:hover {
             background: #cc0000;
         }
+        .btn {
+            background-color: #00a6ff;
+            color: white;
+            /*padding: 10px 20px;*/
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+            font-size: 17px;
+            width: 100%; 
+            text-align: left;
+        }
+
+        .btn:hover {
+            background-color: #008e9d;
+        }
     </style>
 </head>
 <body>
@@ -145,7 +166,7 @@
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications" >Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><a href="logout">Logout</a></li>
+            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
         </ul>
     </div>
 
@@ -228,10 +249,12 @@
                 });
         }
 
-        // setTimeout(() => addNotification("submitted"), 2000);
-        // setTimeout(() => addNotification("processing"), 5000);
-        // setTimeout(() => addNotification("completed"), 8000);
+        
         initPage();
+
+        if (!localStorage.getItem("email")) {
+            window.location.href = "/login";
+        }
     </script>
 </body>
 </html>

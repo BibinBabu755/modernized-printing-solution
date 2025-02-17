@@ -45,12 +45,17 @@
             padding: 10px;
             border-radius: 8px;
             transition: background-color 0.3s;
+            font-size:17px;
         }
 
         .sidebar ul li a:hover {
             background-color: #008e9d;
         }
-
+        
+        .dashboard-link {
+            text-decoration: none; /* Removes underline */
+        }
+        
         .dashboard-heading {
             text-align: center;
             color: white;
@@ -129,6 +134,27 @@
             font-size: 16px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+
+        .btn_logout {
+            background-color: #00a6ff;
+            color: white;
+            /*padding: 10px 20px;*/
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+            font-size: 17px;
+            width: 100%; 
+            text-align: left;
+        }
+
+        .btn_logout:hover {
+            background-color: #008e9d;
+        }
     </style>
     <script>
         let fileCount = 1;
@@ -203,7 +229,7 @@
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications">Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><a href="logout">Logout</a></li>
+            <li><button class="btn_logout" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
         </ul>
     </div>
 
@@ -257,6 +283,10 @@
             setTimeout(() => {
                 toast.remove();
             }, 3000);
+        }
+
+        if (!localStorage.getItem("email")) {
+            window.location.href = "/login";
         }
     </script>
 </body>
