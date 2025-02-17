@@ -1,5 +1,6 @@
 from pymongo import MongoClient
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, session
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 import os
@@ -17,7 +18,9 @@ print(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")
 users = db["users"]
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key_here'  # Required for session management
 CORS(app)
+
 
 
 @app.route("/submit_order", methods=["POST"])
@@ -156,7 +159,9 @@ def login():
             return jsonify({"error": "Invalid input"}), 400
 
         if data["email"] == "admin@admin" and data["password"] == "admin":
-            return jsonify({"error": "Admin"}, 200)
+            session['user'] = {'email': 'admin@admin', 'role': 'admin'}
+            return jsonify({"message": "Admin login successful", "redirect": "/admin"}), 200
+
 
         user = users.find_one({"email": data["email"]})
         if not user or not check_password_hash(user["password"], data["password"]):
