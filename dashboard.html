@@ -56,9 +56,13 @@
             background-color: #008e9d;
         }
 
+
         .content {
-            margin-left: 270px;
+            margin-left: 180px;
+            margin-right: auto;
+            max-width: 83%;
             padding: 20px;
+            align-items: center;
         }
 
         .content h1 {
@@ -83,6 +87,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            transition: transform 0.3s;
+        
         }
 
         .card h2 {
@@ -93,6 +99,10 @@
             color: #666;
         }
         
+        .card:hover {
+            transform: scale(1.05);
+        }
+
         /* animation */
         @keyframes fadeIn {
             from {
