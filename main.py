@@ -142,7 +142,7 @@ def pixel_img():
 def logout():
     try:
         # Clear the session
-        session.pop('user_id', None)
+        session.pop('user', None)
         return jsonify({"message": "Logged out successfully"}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
@@ -153,6 +153,8 @@ def logout_page():
         return open("index.html").read(), 200
     except FileNotFoundError:
         return jsonify({"error": "Login page not found"}), 404
+    
+
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
