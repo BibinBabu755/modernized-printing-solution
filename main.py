@@ -255,12 +255,6 @@ def admin():
 
 
 
-
-
-
-
-
-
     except Exception as e:
         app.logger.error(f"Error loading admin page: {str(e)}", exc_info=True)
         return jsonify({
