@@ -46,6 +46,10 @@ def submit_order():
         if not (files and print_type and copies and style and binding and paper_size):
             return jsonify({"error": "Missing required fields"}), 400
 
+        # Get last order to calculate queue position
+        last_order = db.orders.find_one(sort=[("queue_position", -1)])
+        queue_position = last_order["queue_position"] + 1 if last_order else 1
+
         order_details = {
             "files": file_details,
             "printType": print_type,
@@ -56,12 +60,18 @@ def submit_order():
             "notes": notes,
             "email": email,
             "timestamp": datetime.now(),
-            "status": "submitted",
+            "status": "queued",
+            "queue_position": queue_position
         }
 
         db.orders.insert_one(order_details)
         order_details["_id"] = str(order_details["_id"])
-        return jsonify({"message": "Order submitted successfully", "orderDetails": order_details}), 201
+        return jsonify({
+            "message": "Order submitted successfully",
+            "orderDetails": order_details,
+            "queue_position": queue_position
+        }), 201
+
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
@@ -337,6 +347,53 @@ def logout_page():
         return open(file_path).read(), 200
     except FileNotFoundError:
         return jsonify({"error": "Login page not found"}), 404
+
+@app.route("/get_order_queue", methods=["GET"])
+def get_order_queue():
+    try:
+        orders = list(db.orders.find({"status": "queued"}).sort("queue_position", 1))
+        for order in orders:
+            order["_id"] = str(order["_id"])
+        return jsonify({"orders": orders}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/process_next_order", methods=["POST"])
+def process_next_order():
+    try:
+        next_order = db.orders.find_one_and_update(
+            {"status": "queued"},
+            {"$set": {"status": "processing"}},
+            sort=[("queue_position", 1)],
+            return_document=True
+        )
+        if next_order:
+            return jsonify({
+                "message": "Processing next order", 
+                "order_id": str(next_order["_id"])
+            }), 200
+        return jsonify({"message": "No orders in queue"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/complete_order", methods=["POST"])
+def complete_order():
+    try:
+        order_id = request.json.get("order_id")
+        if not order_id:
+            return jsonify({"error": "Missing order ID"}), 400
+        
+        result = db.orders.find_one_and_update(
+            {"_id": order_id, "status": "processing"},
+            {"$set": {"status": "completed"}},
+            return_document=True
+        )
+        
+        if result:
+            return jsonify({"message": "Order marked as completed"}), 200
+        return jsonify({"error": "Order not found or not in processing state"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

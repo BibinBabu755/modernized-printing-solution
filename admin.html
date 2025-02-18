@@ -139,6 +139,62 @@
             font-size: 0.9em;
             color: #666;
         }
+        
+        .order-queue {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .order-queue h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .customer-list {
+            margin-top: 20px;
+        }
+        
+        .customer-header {
+            display: flex;
+            font-weight: bold;
+            padding: 10px 0;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .customer-header span {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .customer-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .customer-item > div {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .priority-select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .action-buttons button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -172,140 +228,93 @@
                     <span>Priority</span>
                     <span>Actions</span>
                 </div>
-                <!-- Customers will be populated here by JavaScript -->
             </div>
-            <style>
-                .customer-list {
-                    margin-top: 20px;
-                }
-                .customer-header {
-                    display: flex;
-                    font-weight: bold;
-                    padding: 10px 0;
-                    border-bottom: 2px solid #ddd;
-                }
-                .customer-header span {
-                    flex: 1;
-                    text-align: center;
-                }
-                .customer-item {
-                    display: flex;
-                    align-items: center;
-                    padding: 10px 0;
-                    border-bottom: 1px solid #eee;
-                }
-                .customer-item > div {
-                    flex: 1;
-                    text-align: center;
-                }
-                .priority-select {
-                    padding: 5px;
-                    border-radius: 4px;
-                    border: 1px solid #ddd;
-                }
-                .action-buttons button {
-                    margin: 0 5px;
-                    padding: 5px 10px;
-                    border-radius: 4px;
-                    border: none;
-                    cursor: pointer;
-                }
-            </style>
-            <script>
-                async function fetchCustomers() {
-                    try {
-                        const response = await fetch('/get_customers');
-                        const data = await response.json();
-                        displayCustomers(data.customers);
-                    } catch ( error ) {
-                        console.error('Error fetching customers:', error);
-                    }
-                }
-
-                function displayCustomers(customers) {
-                    const container = document.getElementById('customers-list');
-                    // Clear existing content except header
-                    while (container.children.length > 1) {
-                        container.removeChild(container.lastChild);
-                    }
-
-                    customers.forEach(customer => {
-                        const item = document.createElement('div');
-                        item.className = 'customer-item';
-                        
-                        const lastOrder = new Date(customer.last_order).toLocaleString();
-                        
-                        item.innerHTML = `
-                            <div>${customer.firstName} ${customer.lastName}</div>
-                            <div>${lastOrder}</div>
-                            <div>
-                                <select class="priority-select" 
-                                        data-email="${customer.email}"
-                                        onchange="updatePriority('${customer.email}', this.value)">
-                                    <option value="1" ${customer.priority == 1 ? 'selected' : ''}>Low</option>
-                                    <option value="2" ${customer.priority == 2 ? 'selected' : ''}>Medium</option>
-                                    <option value="3" ${customer.priority == 3 ? 'selected' : ''}>High</option>
-                                </select>
-                            </div>
-                            <div class="action-buttons">
-                                <button onclick="editCustomer('${customer.email}')">Edit</button>
-                                <button onclick="deleteCustomer('${customer.email}')">Delete</button>
-                            </div>
-                        `;
-                        container.appendChild(item);
-                    });
-                }
-
-                async function updatePriority(email, priority) {
-                    try {
-                        const response = await fetch('/update_priority', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({email, priority})
-                        });
-                        const result = await response.json();
-                        if (result.message) {
-                            showToast('Priority updated successfully');
-                        }
-                    } catch (error) {
-                        console.error('Error updating priority:', error);
-                        showToast('Error updating priority');
-                    }
-                }
-
-                function showToast(message) {
-                    const toast = document.createElement('div');
-                    toast.className = 'toast';
-                    toast.textContent = message;
-                    document.body.appendChild(toast);
-                    setTimeout(() => toast.remove(), 3000);
-                }
-
-                // Fetch customers when page loads
-                fetchCustomers();
-            </script>
         </div>
 
         <div class="card" id="orders">
             <h2>Orders</h2>
             <p>Track and manage incoming orders.</p>
-            <div class="order-list" id="orders-list">
-                <!-- Orders will be populated here by JavaScript -->
+            <div class="order-list" id="orders-list"></div>
+            <div class="order-queue">
+                <h3>Order Queue</h3>
+                <div id="queue-list"></div>
+                <button class="confirm-btn" onclick="processNextOrder()">Process Next Order</button>
             </div>
         </div>
 
         <div class="card" id="payments">
             <h2>Payments</h2>
             <p>Confirm and manage payments.</p>
-            <div class=" order-list" id="payments-list">
-                <!-- Payments will be populated here by JavaScript -->
-            </div>
+            <div class="order-list" id="payments-list"></div>
         </div>
     </div>
 
     <script>
+        // Customer Management Functions
+        async function fetchCustomers() {
+            try {
+                const response = await fetch('/get_customers');
+                const data = await response.json();
+                displayCustomers(data.customers);
+            } catch (error) {
+                console.error('Error fetching customers:', error);
+                showToast('Error fetching customers');
+            }
+        }
+
+        function displayCustomers(customers) {
+            const container = document.getElementById('customers-list');
+            while (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+
+            customers.forEach(customer => {
+                const item = document.createElement('div');
+                item.className = 'customer-item';
+                
+                const lastOrder = new Date(customer.last_order).toLocaleString();
+                
+                item.innerHTML = `
+                    <div>${customer.firstName} ${customer.lastName}</div>
+                    <div>${lastOrder}</div>
+                    <div>
+                        <select class="priority-select" 
+                                data-email="${customer.email}"
+                                onchange="updatePriority('${customer.email}', this.value)">
+                            <option value="1" ${customer.priority == 1 ? 'selected' : ''}>Low</option>
+                            <option value="2" ${customer.priority == 2 ? 'selected' : ''}>Medium</option>
+                            <option value="3" ${customer.priority == 3 ? 'selected' : ''}>High</option>
+                        </select>
+                    </div>
+                    <div class="action-buttons">
+                        <button onclick="editCustomer('${customer.email}')">Edit</button>
+                        <button onclick="deleteCustomer('${customer.email}')">Delete</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function updatePriority(email, priority) {
+            try {
+                const response = await fetch('/update_priority', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({email, priority})
+                });
+                const result = await response.json();
+                if (result.message) {
+                    showToast('Priority updated successfully');
+                }
+            } catch (error) {
+                console.error('Error updating priority:', error);
+                showToast('Error updating priority');
+            }
+        }
+
+        // Order Management Functions
         async function fetchOrders() {
             try {
                 const response = await fetch('/get_all_orders');
@@ -313,6 +322,7 @@
                 displayOrders(data.orders);
             } catch (error) {
                 console.error('Error fetching orders:', error);
+                showToast('Error fetching orders');
             }
         }
 
@@ -324,11 +334,9 @@
             paymentsList.innerHTML = '';
 
             orders.forEach(order => {
-                // Create order item
                 const orderItem = document.createElement('div');
                 orderItem.className = 'order-item';
                 
-                // Order details
                 const orderDetails = document.createElement('div');
                 orderDetails.innerHTML = `
                     <strong>Order ID:</strong> ${order._id}<br>
@@ -337,19 +345,17 @@
                     <button class="confirm-btn" onclick="updateOrderStatus('${order._id}', 'Completed')">Mark as Completed</button>
                 `;
                 
-                // File list
                 const fileList = document.createElement('div');
                 fileList.className = 'file-list';
                 fileList.innerHTML = '<strong>Files:</strong><br>' + 
                     order.files.map(file => 
-                        `<a href="${file.url}, target="_blank">${file.filename}</a>`
+                        `<a href="${file.url}" target="_blank">${file.filename}</a>`
                     ).join('<br>');
 
                 orderItem.appendChild(orderDetails);
                 orderItem.appendChild(fileList);
                 ordersList.appendChild(orderItem);
 
-                // Create payment item
                 const paymentItem = document.createElement('div');
                 paymentItem.className = 'order-item';
                 paymentItem.innerHTML = `
@@ -361,54 +367,56 @@
             });
         }
 
-        async function updateOrderStatus(orderId, status) {
+        // Order Queue Functions
+        async function fetchOrderQueue() {
             try {
-                const response = await fetch('/update_order_status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ orderId, status })
+                const response = await fetch('/get_order_queue');
+                const data = await response.json();
+                const queueList = document.getElementById('queue-list');
+                queueList.innerHTML = '';
+
+                data.orders.forEach(order => {
+                    const div = document.createElement('div');
+                    div.className = 'order-item';
+                    div.textContent = `Order #${order._id} - Position: ${order.queue_position}`;
+                    queueList.appendChild(div);
                 });
-                const result = await response.json();
-                if (result.message) {
-                    const statusElement = document.getElementById(`order-status-${orderId}`);
-                    statusElement.className = `order-status ${status.toLowerCase()}`;
-                    statusElement.textContent = status;
-                    showToast('Order status updated successfully');
-                }
             } catch (error) {
-                console.error('Error updating order status:', error);
-                showToast('Error updating order status');
+                console.error('Error fetching order queue:', error);
+                showToast('Error fetching order queue');
             }
         }
 
-        async function confirmPayment(orderId) {
+        async function processNextOrder() {
             try {
-                const response = await fetch('/confirm_payment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ orderId })
-                });
+                const response = await fetch('/process_next_order', { method: 'POST' });
                 const result = await response.json();
                 if (result.message) {
-                    const paymentElement = document.getElementById(`payment-status-${orderId}`);
-                    paymentElement.className = 'payment-status confirmed';
-                    paymentElement.textContent = 'Confirmed';
-                    showToast('Payment confirmed successfully');
+                    fetchOrderQueue();
+                    fetchOrders();
+                    showToast('Processing next order');
                 }
             } catch (error) {
-                console.error('Error confirming payment:', error);
-                showToast('Error confirming payment');
+                console.error('Error processing next order:', error);
+                showToast('Error processing next order');
             }
         }
 
-        // Fetch orders when page loads
+        // Initialization
         window.onload = function() {
+            fetchCustomers();
             fetchOrders();
             fetchOrderStats();
+            fetchOrderQueue();
+        }
+
+        // Utility Functions
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         async function fetchOrderStats() {
@@ -421,7 +429,6 @@
             } catch (error) {
                 console.error('Error fetching order stats:', error);
                 document.getElementById('chartError').style.display = 'block';
-                // Render chart with default data
                 renderChart({
                     totalOrders: 1,
                     completedOrders: 0
@@ -431,7 +438,6 @@
 
         function renderChart(stats) {
             const ctx = document.getElementById('ordersChart').getContext('2d');
-            // Destroy existing chart instance if it exists
             if (window.ordersChartInstance) {
                 window.ordersChartInstance.destroy();
             }
