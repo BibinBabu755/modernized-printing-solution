@@ -1,12 +1,13 @@
 from pymongo import MongoClient
 import os
 from flask import Flask, request, jsonify, send_file, session, send_from_directory, render_template
-
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from urllib.parse import quote_plus
 from requests import post
 from datetime import datetime
+import PyPDF2
+import io
 
 DB_USER = quote_plus(os.getenv("DB_USER", "user"))
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", "user"))
@@ -120,6 +121,31 @@ def update_pfp():
         return jsonify({"message": "Profile picture updated successfully", "profilePicture": fi}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+@app.route("/update_password", methods=["POST"])
+def update_password():
+    try:
+        data = request.get_json()
+        email = data.get("email")
+        new_password = data.get("newPassword")
+
+        if not email or not new_password:
+            return jsonify({"success": False, "message": "Email and password are required"}), 400
+
+        # Hash the new password
+        hashed_password = generate_password_hash(new_password)
+
+        # Update the user's password in the database
+        result = users.update_one({"email": email}, {"$set": {"password": hashed_password}})
+
+        if result.modified_count == 1:
+            return jsonify({"success": True, "message": "Password updated successfully"})
+        else:
+            return jsonify({"success": False, "message": "User not found or password not changed"}), 404
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 @app.route("/get_orders", methods=["GET"])
 def get_orders():
@@ -386,6 +412,28 @@ def complete_order():
         if result:
             return jsonify({"message": "Order marked as completed"}), 200
         return jsonify({"error": "Order not found or not in processing state"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/get_pdf_page_count", methods=["POST"])
+def get_pdf_page_count():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file provided"}), 400
+            
+        file = request.files['file']
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({"error": "File must be a PDF"}), 400
+
+        # Read the PDF file
+        pdf_stream = io.BytesIO(file.read())
+        pdf_reader = PyPDF2.PdfReader(pdf_stream)
+        page_count = len(pdf_reader.pages)
+
+        return jsonify({
+            "page_count": page_count,
+            "filename": file.filename
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

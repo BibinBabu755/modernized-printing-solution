@@ -39,7 +39,7 @@
             padding: 10px;
             border-radius: 8px;
             transition: background-color 0.3s;
-            font-size:17px;
+            font-size: 17px;
         }
 
         .sidebar ul li a:hover {
@@ -200,9 +200,10 @@
             border-radius: 8px;
             display: block;
             font-size: 17px;
-            width: 100%; 
+            width: 100%;
             text-align: left;
         }
+
         .btn_logout:hover {
             background-color: #008e9d;
         }
@@ -235,7 +236,8 @@
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications">Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><button class="btn_logout" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
+            <li><button class="btn_logout"
+                    onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
         </ul>
     </div>
 
@@ -358,6 +360,46 @@
             }
         }
 
+        function updatePassword() {
+            const newPassword = document.getElementById("new-password").value.trim();
+            const confirmPassword = document.getElementById("confirm-password").value.trim();
+
+            if (newPassword === "" || confirmPassword === "") {
+                alert("Please enter the new password and confirm it.");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            fetch("/update_password", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: localStorage.getItem("email"),
+                    newPassword: newPassword
+                })
+            })
+                .then(response => response.json())  // Ensure JSON response is read
+                .then(data => {
+                    if (data.success) {
+                        alert("Password updated successfully!");
+                        hidePopup('change-password'); // Close popup
+                    } else {
+                        alert("Error updating password: " + data.message); // Show error message from backend
+                    }
+                })
+                .catch(error => {
+                    alert("Error updating password: " + error.message); // Handle fetch errors
+                });
+        }
+
+
+
         function initPage() {
             fetch("/get_user?email=" + localStorage.getItem("email"))
                 .then(response => response.json())
@@ -370,7 +412,7 @@
         }
 
         document.onload = initPage();
-        
+
         if (!localStorage.getItem("email")) {
             window.location.href = "/login";
         }
