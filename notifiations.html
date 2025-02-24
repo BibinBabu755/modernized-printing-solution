@@ -214,7 +214,7 @@
             const ts = getFormattedDateTime(timestamp)
             let message = "";
 
-            if (type === "submitted") {
+            if (type === "queued") {
                 message = "Your order has been submitted - " + ts;
                 li.classList.add("submitted");
             } else if (type === "processing") {
