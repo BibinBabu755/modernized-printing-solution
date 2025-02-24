@@ -216,7 +216,7 @@
                 const response = await fetch(`/get_payment_overview?email=${userEmail}`);
                 const data = await response.json();
 
-                
+
 
                 if (response.ok && data.payments) {
                     let paymentList = "";
@@ -246,6 +246,79 @@
             loadOverview();
             loadPayments();
         };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadOrdersForFeedback();
+        });
+
+        
+
+        async function loadOrdersForFeedback() {
+            try {
+                const response = await fetch("/get_orders_overview");
+                const data = await response.json();
+
+                if (response.ok && data.orders) {
+                    let orderDropdown = document.getElementById("order");
+                    orderDropdown.innerHTML = ""; // Clear existing options
+
+                    data.orders.forEach(order => {
+                        let option = document.createElement("option");
+                        option.value = order._id;
+                        option.textContent = `#${order._id}`;
+                        orderDropdown.appendChild(option);
+                    });
+                } else {
+                    console.error("Failed to load orders:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        }
+
+        
+
+        
+
+        // Submit feedback
+        async function submitFeedback() {
+    const orderId = document.getElementById("order").value;
+    const feedbackText = document.getElementById("feedback").value.trim();
+
+    if (!orderId || feedbackText === "") {
+        alert("Please fill out all fields.");
+        return;
+    }
+
+    const feedbackData = {
+        order_id: orderId,
+        feedback: feedbackText
+    };
+
+    console.log("Submitting feedback:", feedbackData); // Debugging
+
+    try {
+        const response = await fetch("/submit_feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(feedbackData),
+        });
+
+        const result = await response.json();
+        console.log("Server response:", result); // Debugging
+
+        if (response.ok) {
+            alert("Feedback submitted successfully!");
+            document.getElementById("feedback").value = "";
+        } else {
+            alert("Failed to submit feedback: " + result.error);
+        }
+    } catch (error) {
+        console.error("Error submitting feedback:", error);
+    }
+}
+
+
 
     </script>
 </head>
@@ -325,20 +398,7 @@
                                 <option value="ORD-2024-001">#ORD-2024-001</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-                            <div class="flex space-x-2">
-                                <i
-                                    class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i
-                                    class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i
-                                    class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i
-                                    class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i
-                                    class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                            </div>
+                      
                         </div>
                         <div>
                             <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your
@@ -348,9 +408,9 @@
                                 placeholder="Share your experience with us..."></textarea>
                         </div>
                         <div class="flex justify-end">
-                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <button onclick="submitFeedback()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                 <i class="fas fa-paper-plane mr-2"></i> Submit Feedback
-                            </button>
+                            </button>                            
                         </div>
                     </div>
                 </div>

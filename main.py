@@ -19,6 +19,7 @@ DB_CLUSTER = os.getenv("DB_CLUSTER", "cluster0.mx7kl.mongodb.net")
 db = MongoClient(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")[DB_NAME]
 print(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")
 users = db["users"]
+feedback = db["feedbacks"]
 
 app = Flask(__name__)
 
@@ -179,6 +180,27 @@ def get_orders_overview():
         order["_id"] = str(order["_id"])
 
     return jsonify({"orders": orders}), 200
+
+@app.route("/submit_feedback", methods=["POST"])
+def submit_feedback():
+    data = request.json
+    print("Received feedback data:", data)  # Debugging
+
+    order_id = data.get("order_id")
+    feedback_text = data.get("feedback") 
+
+    if not order_id or not feedback_text:
+            return jsonify({"error": "Missing fields"}), 400
+
+    feedback_entry = {
+        "order_id": order_id,
+        "feedback": feedback_text,
+        "timestamp": datetime.utcnow() 
+    }
+
+    db.feedback.insert_one(feedback_entry)
+    return jsonify({"message": "Feedback submitted successfully"}), 200
+
 
 @app.route("/get_all_orders", methods=["GET"])
 def get_all_orders():
