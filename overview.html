@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,8 +16,10 @@
             background-size: cover;
             background-color: #f4f4f9;
         }
+
         .dashboard-link {
-            text-decoration: none; /* Removes underline */
+            text-decoration: none;
+            /* Removes underline */
         }
 
         .dashboard-heading {
@@ -54,7 +57,7 @@
             padding: 10px;
             border-radius: 8px;
             transition: background-color 0.3s;
-            font-size:17px;
+            font-size: 17px;
         }
 
         .sidebar ul li a:hover {
@@ -72,7 +75,7 @@
 
         .content h1 {
             color: #ffffff;
-            background-color:#00a6ff6d;
+            background-color: #00a6ff6d;
             border-radius: 30px;
             text-align: center;
         }
@@ -92,7 +95,7 @@
         .card p {
             color: #666;
         }
-        
+
         /* animation */
         @keyframes fadeIn {
             from {
@@ -120,7 +123,7 @@
             border-radius: 8px;
             display: block;
             font-size: 17px;
-            width: 100%; 
+            width: 100%;
             text-align: left;
         }
     </style>
@@ -131,66 +134,135 @@
             { id: "ORD-2024-000", status: "Completed", size: "A3", pages: 10, type: "B&W", progress: 4 }
         ];
 
-        function loadOverview() {
-            let orderList = "";
-            orders.forEach(order => {
-                orderList += `
-                    <div class="bg-gray-50 p-4 rounded cursor-pointer hover:bg-gray-100" onclick="showTracking('${order.id}')">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="font-medium">#${order.id}</span>
-                            <span class="px-3 py-1 rounded-full text-sm ${order.status === "Completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">${order.status}</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div>Print Size: ${order.size}</div>
-                            <div>Pages: ${order.pages}</div>
-                            <div>Type: ${order.type}</div>
-                        </div>
+        window.ordersData = []; // Ensure it's globally declared
+
+        async function loadOverview() {
+            try {
+                const response = await fetch("/get_orders_overview");
+                const data = await response.json();
+
+                console.log("Fetched Orders:", data.orders); // Debugging
+
+                if (response.ok && data.orders) {
+                    window.ordersData = data.orders; // ✅ Store globally
+
+                    let orderList = "";
+                    data.orders.forEach(order => {
+                        orderList += `
+                <div class="bg-gray-50 p-4 rounded cursor-pointer hover:bg-gray-100" 
+                    onclick="showTracking('${order._id}')">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">${order._id}</span>
+                        <span class="px-3 py-1 rounded-full text-sm 
+                            ${["Completed", "Processing"].includes(order.status) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">
+                            ${order.status}
+                        </span>
                     </div>
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div>Print Size: ${order.paperSize}</div>
+                        <div>Style: ${order.style}</div>
+                        <div>Type: ${order.printType}</div>
+                    </div>
+                </div>
                 `;
-            });
-            document.getElementById("orderSummary").innerHTML = orderList;
+                    });
+
+                    document.getElementById("orderSummary").innerHTML = orderList;
+                } else {
+                    console.error("Failed to load orders:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
         }
 
+
         function showTracking(orderId) {
-            const order = orders.find(o => o.id === orderId);
-            if (!order) return;
 
-            document.getElementById("popupTitle").innerText = `Tracking Order: #${order.id}`;
-            document.getElementById("progressBar").style.width = `${(order.progress / 4) * 100}%`;
 
-            let trackingSteps = ["Received", "Processing", "Printing", "Completed"];
+            const order = window.ordersData.find(o => o._id === orderId);
+
+            let trackingSteps = ["Queued", "Processing", "Printing", "Completed"];
+            let progress = trackingSteps.map(s => s.toLowerCase()).indexOf(order.status.toLowerCase());
+
+            document.getElementById("popupTitle").innerText = `Tracking Order: #${orderId}`;
+            document.getElementById("progressBar").style.width = `${(progress / (trackingSteps.length - 1)) * 100}%`;
+
             let trackingHTML = trackingSteps.map((step, index) => `
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 ${index < order.progress ? "bg-green-500" : "bg-gray-300"} rounded-full flex items-center justify-center">
-                        ${index < order.progress ? '<i class="fas fa-check text-white"></i>' : index + 1}
-                    </div>
-                    <span class="text-sm mt-2">${step}</span>
-                </div>
-            `).join("");
+        <div class="flex flex-col items-center">
+            <div class="w-8 h-8 flex items-center justify-center rounded-full 
+                ${index <= progress ? "bg-green-500 text-white" : "bg-gray-300 text-gray-700"}">
+                ${index <= progress ? '<i class="fas fa-check"></i>' : index + 1}
+            </div>
+            <span class="text-sm mt-2">${step}</span>
+        </div>
+    `).join("");
 
             document.getElementById("orderTracking").innerHTML = trackingHTML;
             document.getElementById("trackingModal").classList.remove("hidden");
+
+
         }
+
+
 
         function closeTracking() {
             document.getElementById("trackingModal").classList.add("hidden");
         }
 
-        window.onload = loadOverview;
+        async function loadPayments() {
+            try {
+                const userEmail = localStorage.getItem("email");  // Assuming email is stored in localStorage
+                const response = await fetch(`/get_payment_overview?email=${userEmail}`);
+                const data = await response.json();
+
+                
+
+                if (response.ok && data.payments) {
+                    let paymentList = "";
+                    data.payments.forEach(payment => {
+                        paymentList += `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <span class="font-medium">${payment._id}</span>
+                            <span class="text-sm text-gray-600 ml-2">${payment.date}</span>
+                        </div>
+                        <span class="text-green-600 font-medium">₹${payment.total_cost.toFixed(2)}</span>
+                    </div>
+                `;
+                    });
+
+                    document.getElementById("paymentSummary").innerHTML = paymentList;
+                } else {
+                    document.getElementById("paymentSummary").innerHTML = "<p class='text-gray-500'>No payments found.</p>";
+                    console.error("Failed to load payments:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching payments:", error);
+            }
+        }
+
+        window.onload = function () {
+            loadOverview();
+            loadPayments();
+        };
+
     </script>
 </head>
+
 <body class="bg-gray-100">
     <div class="sidebar">
         <a href="dashboard" class="dashboard-link">
             <h2 class="dashboard-heading">Dashboard</h2>
         </a>
-        
+
         <ul>
             <li><a href="overview">Overview</a></li>
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications">Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
+            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button>
+            </li>
         </ul>
     </div>
 
@@ -206,7 +278,9 @@
             </section>
 
             <!-- Order Tracking Popup -->
-            <div id="trackingModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+            <!-- Order Tracking Popup -->
+            <div id="trackingModal"
+                class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
                 <div class="bg-white p-6 rounded-lg shadow-md w-96">
                     <h2 id="popupTitle" class="text-xl font-bold mb-4"></h2>
 
@@ -218,35 +292,25 @@
 
                     <!-- Close Button -->
                     <div class="mt-4 flex justify-end">
-                        <button onclick="closeTracking()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        <button onclick="closeTracking()"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                             Close
                         </button>
                     </div>
                 </div>
             </div>
 
+
             <!-- Payment Overview Section -->
             <section class="mb-8">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h2 class="text-2xl font-bold mb-4">Payment Overview</h2>
-                    <div class="space-y-2">
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
-                            <div>
-                                <span class="font-medium">#PAY-2024-001</span>
-                                <span class="text-sm text-gray-600 ml-2">Feb 15, 2024</span>
-                            </div>
-                            <span class="text-green-600 font-medium">$45.00</span>
-                        </div>
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
-                            <div>
-                                <span class="font-medium">#PAY-2024-000</span>
-                                <span class="text-sm text-gray-600 ml-2">Feb 10, 2024</span>
-                            </div>
-                            <span class="text-green-600 font-medium">$32.50</span>
-                        </div>
+                    <div id="paymentSummary" class="space-y-2">
+                        <!-- Payments will be dynamically inserted here -->
                     </div>
                 </div>
             </section>
+
 
             <!-- Feedback Section -->
             <section>
@@ -255,7 +319,8 @@
                     <div class="space-y-4">
                         <div>
                             <label for="order" class="block text-sm font-medium text-gray-700 mb-1">Select Order</label>
-                            <select id="order" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            <select id="order"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                                 <option value="ORD-2024-000">#ORD-2024-000</option>
                                 <option value="ORD-2024-001">#ORD-2024-001</option>
                             </select>
@@ -263,16 +328,24 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
                             <div class="flex space-x-2">
-                                <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
-                                <i class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i
+                                    class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i
+                                    class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i
+                                    class="fas fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i
+                                    class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
+                                <i
+                                    class="far fa-star text-2xl text-yellow-400 cursor-pointer hover:text-yellow-500"></i>
                             </div>
                         </div>
                         <div>
-                            <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your Feedback</label>
-                            <textarea id="feedback" rows="4" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="Share your experience with us..."></textarea>
+                            <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your
+                                Feedback</label>
+                            <textarea id="feedback" rows="4"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Share your experience with us..."></textarea>
                         </div>
                         <div class="flex justify-end">
                             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
@@ -286,4 +359,5 @@
         </div>
     </div>
 </body>
+
 </html>

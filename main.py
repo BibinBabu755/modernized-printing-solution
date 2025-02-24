@@ -14,6 +14,8 @@ DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", "user"))
 DB_NAME = os.getenv("DB_NAME", "bibs")
 DB_CLUSTER = os.getenv("DB_CLUSTER", "cluster0.mx7kl.mongodb.net")
 
+
+
 db = MongoClient(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")[DB_NAME]
 print(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")
 users = db["users"]
@@ -43,6 +45,7 @@ def submit_order():
         paper_size = request.form.getlist("paperSize[]")
         notes = request.form.getlist("notes[]")
         email = request.form.get("email")
+        total_cost = float(request.form.get("total_cost", 0))
 
         if not (files and print_type and copies and style and binding and paper_size):
             return jsonify({"error": "Missing required fields"}), 400
@@ -60,6 +63,7 @@ def submit_order():
             "paperSize": paper_size,
             "notes": notes,
             "email": email,
+            "total_cost": total_cost,  # Added total_cost here
             "timestamp": datetime.now(),
             "status": "queued",
             "queue_position": queue_position
@@ -161,6 +165,21 @@ def get_orders():
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
+@app.route("/get_orders_overview", methods=["GET"])
+def get_orders_overview():
+    if "user" not in session:
+        return jsonify({"error": "User not logged in"}), 401  # Unauthorized
+
+    email = session["user"]["email"]  # Fetch logged-in user's email
+
+    orders = list(db.orders.find({"email": email}, {"_id": 1, "status": 1, "paperSize": 1, "style": 1,  "printType": 1}))
+    
+    # Convert ObjectId to string
+    for order in orders:
+        order["_id"] = str(order["_id"])
+
+    return jsonify({"orders": orders}), 200
+
 @app.route("/get_all_orders", methods=["GET"])
 def get_all_orders():
     try:
@@ -246,6 +265,8 @@ def login():
 
         user.pop("password")
         user["_id"] = str(user["_id"])
+        session["user"] = {"email": user["email"], "role": "user"}
+
         return jsonify({"message": "Login successful", "user": user}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
@@ -297,10 +318,50 @@ def admin():
 def overview_page():
     try:
         file_path = os.path.join(os.path.dirname(__file__), "overview.html")
-        return open(file_path).read(), 200
+        return open(file_path, encoding="utf-8").read(), 200
+
     except FileNotFoundError:
         return jsonify({"error": "Overview page not found"}), 404
 
+
+@app.route("/get_payment_overview", methods=["GET"])
+def get_payment_overview():
+    try:
+        email = request.args.get("email")
+        
+        if not email:
+            return jsonify({"error": "Email parameter is missing"}), 400
+        
+        # Fetch orders for this email
+        orders = db.orders.find(
+            {"email": email}, {"_id": 1, "timestamp": 1, "total_cost": 1, }
+        )
+
+        payments = []
+        for order in orders:
+            timestamp = order.get("timestamp")
+            
+            # Ensure timestamp is a valid datetime object
+            if isinstance(timestamp, datetime):
+                date_str = timestamp.strftime('%Y-%m-%d')
+            else:
+                date_str = "Unknown"
+
+            payments.append({
+                "_id": str(order.get("_id")),
+                "date": date_str,
+                "total_cost": order.get("total_cost", 0)  # Ensure default 0 if missing
+            })
+
+        print("Payments Data:", payments)  # Debugging in logs
+        return jsonify({"payments": payments})
+
+    except Exception as e:
+        print("Error in get_payment_overview:", str(e))  # Print the error in Flask logs
+        return jsonify({"error": "Internal Server Error"}), 500
+
+
+    
 @app.route("/orders", methods=["GET"])
 def orders_page():
     try:
