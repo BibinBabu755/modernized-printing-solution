@@ -37,54 +37,47 @@ razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 @app.route("/submit_order", methods=["POST"])
 def submit_order():
     try:
-        files = request.files.getlist("files[]")
-        file_details = []
-        for file in files:
-            file_url = upload_file(file=file)
-            file_details.append({"url": file_url, "filename": file.filename})
-
-        print_type = request.form.getlist("printType[]")
-        copies = request.form.getlist("copies[]")
-        style = request.form.getlist("style[]")
-        binding = request.form.getlist("binding[]")
-        paper_size = request.form.getlist("paperSize[]")
-        notes = request.form.getlist("notes[]")
+        payment_id = request.form.get("payment_id")  # Get Razorpay payment ID
         email = request.form.get("email")
-        total_cost = float(request.form.get("total_cost", 0))
-        payment_id = request.form.get("payment_id")
 
-        if not payment_id:
-            return jsonify({"error": "Payment ID missing"}), 400
-        
-        
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
 
-        last_order = db.orders.find_one(sort=[("queue_position", -1)])
-        queue_position = last_order["queue_position"] + 1 if last_order else 1
+        # ✅ Determine payment status
+        #payment_status = "paid" if payment_id else "unpaid"
 
-        payment_status = "paid" if payment_id else "unpaid"
+        if payment_id=="null":
+            payment_status = "unpaid"
+        else:
+            payment_status = "paid"
 
+        # ✅ Prepare order details
         order_details = {
-            "files": file_details,
-            "printType": print_type,
-            "copies": copies,
-            "style": style,
-            "binding": binding,
-            "paperSize": paper_size,
-            "notes": notes,
             "email": email,
-            "total_cost": total_cost,
-            "payment_id": payment_id,
-            "payment_status": payment_status,
+            "files": request.form.getlist("files[]"),
+            "printType": request.form.getlist("printType[]"),
+            "copies": request.form.getlist("copies[]"),
+            "style": request.form.getlist("style[]"),
+            "binding": request.form.getlist("binding[]"),
+            "paperSize": request.form.getlist("paperSize[]"),
+            "notes": request.form.getlist("notes[]"),
+            "total_cost": float(request.form.get("total_cost", 0)),
+            "payment_id": payment_id,  # Store payment ID if available
+            "payment_status": payment_status,  # ✅ Store payment status
             "timestamp": datetime.now().isoformat(),
-            "status": "queued",
-            "queue_position": queue_position
+            "status": "queued"
         }
 
+        # ✅ Insert into MongoDB
         db.orders.insert_one(order_details)
+
         return jsonify({"message": "Order submitted successfully"}), 201
 
     except Exception as e:
+        import traceback
+        print("🔥 Error in submit_order:", traceback.format_exc())
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
 
     
 @app.route("/create_order", methods=["POST"])

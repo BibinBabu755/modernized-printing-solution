@@ -1299,13 +1299,13 @@
                                 <label>Payment Method:</label>
                                 <div>
                                     <label>
-                                        <input type="radio" name="paymentMethod" value="cod" checked> Cash on Delivery
+                                        <input type="radio" name="payment_method" value="cod" checked> Cash on Delivery
                                         (COD)
                                     </label>
                                 </div>
                                 <div>
                                     <label>
-                                        <input type="radio" name="paymentMethod" value="online"> Online Payment
+                                        <input type="radio" name="payment_method" value="online"> Online Payment
                                     </label>
                                 </div>
                             </div>
@@ -1483,11 +1483,17 @@
             const formData = new FormData(document.getElementById("orderForm"));
             const confirmBtn = document.getElementById('confirmBtn');
             const cancelBtn = document.getElementById('cancelBtn');
-            const successMessage = document.getElementById('successMessage');
 
-            if (confirmBtn) confirmBtn.classList.add('loading');
-            if (cancelBtn) cancelBtn.disabled = true;
-            if (successMessage) successMessage.style.display = 'block';
+            // Get the selected payment method
+            const paymentMethodElement = document.querySelector('input[name="payment_method"]:checked');
+
+            if (!paymentMethodElement) {
+                alert("Please select a payment method.");
+                return;
+            }
+
+            const paymentMethod = paymentMethodElement.value;
+            console.log("Selected Payment Method:", paymentMethod);
 
             // Calculate total cost
             let baseCost = 0;
@@ -1514,8 +1520,6 @@
             });
 
             const totalCost = baseCost + bindingCost + sizeCost + copiesCost;
-
-            // Add total cost to form data
             formData.append('total_cost', totalCost);
             formData.append('email', localStorage.getItem('email'));
 
@@ -1523,45 +1527,59 @@
             cancelBtn.disabled = true;
             confirmBtn.classList.add('loading');
 
-            // Call backend to create Razorpay order
-            fetch("/create_order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ total_cost: totalCost })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.order_id) {
-                        var options = {
-                            "key": "rzp_test_uWQB1jUeTRrqGS",
-                            "amount": data.amount,
-                            "currency": data.currency,
-                            "name": "Printing Service",
-                            "description": "Print Order Payment",
-                            "order_id": data.order_id,
-                            "handler": function (response) {
-                                alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
-                                submitOrder(formData, response.razorpay_payment_id);
-                            },
-                            "prefill": {
-                                "email": localStorage.getItem("email")
-                            },
-                            "theme": { "color": "#3399cc" }
-                        };
-
-                        var rzp1 = new Razorpay(options);
-                        rzp1.open();
-                    } else {
-                        throw new Error("Error creating Razorpay order.");
-                    }
+            if (paymentMethod === "cod") {
+                // ✅ If COD, submit order immediately
+                submitOrder(formData, null);
+            } else {
+                // ✅ If Online Payment, use Razorpay
+                fetch("/create_order", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ total_cost: totalCost })
                 })
-                .catch(error => {
-                    confirmBtn.disabled = false;
-                    cancelBtn.disabled = false;
-                    confirmBtn.classList.remove('loading');
-                    alert("Error: " + error.message);
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.order_id) {
+                            var options = {
+                                "key": "rzp_test_uWQB1jUeTRrqGS",  // Replace with your Razorpay test/live key
+                                "amount": data.amount,
+                                "currency": data.currency,
+                                "name": "Printing Service",
+                                "description": "Print Order Payment",
+                                "order_id": data.order_id,
+                                "handler": function (response) {
+                                    alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+                                    submitOrder(formData, response.razorpay_payment_id);
+                                },
+                                "prefill": {
+                                    "email": localStorage.getItem("email")
+                                },
+                                "theme": { "color": "#3399cc" }
+                            };
+
+                            var rzp1 = new Razorpay(options);
+                            rzp1.open();
+                        } else {
+                            throw new Error("Error creating Razorpay order.");
+                        }
+                    })
+                    .catch(error => {
+                        confirmBtn.disabled = false;
+                        cancelBtn.disabled = false;
+                        confirmBtn.classList.remove('loading');
+                        alert("Error: " + error.message);
+                    });
+            }
         }
+
+        function updateCostDisplay(totalCost) {
+            let costElement = document.getElementById('totalCostDisplay');
+            if (costElement) {
+                costElement.textContent = `Total Cost: ₹${totalCost}`;
+            }
+        }
+
+
 
         function submitOrder(formData, payment_id) {
             formData.append("payment_id", payment_id);
