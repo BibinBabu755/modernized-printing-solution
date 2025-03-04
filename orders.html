@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard & Order Management</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,17 +47,17 @@
             padding: 10px;
             border-radius: 8px;
             transition: background-color 0.3s;
-            font-size:17px;
+            font-size: 17px;
         }
 
         .sidebar ul li a:hover {
             background-color: #008e9d;
         }
-        
+
         .dashboard-link {
-            text-decoration: none; 
+            text-decoration: none;
         }
-        
+
         .dashboard-heading {
             text-align: center;
             color: white;
@@ -167,6 +168,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -191,7 +193,7 @@
             border-radius: 8px;
             display: block;
             font-size: 17px;
-            width: 100%; 
+            width: 100%;
             text-align: left;
         }
 
@@ -218,24 +220,24 @@
             margin-left: auto;
             max-width: 1600px;
         }
-        
+
         .row {
             display: flex;
             gap: 40px;
             justify-content: flex-start;
         }
-        
+
         .col-md-8 {
             flex: 1;
             max-width: 1000px;
             margin-left: 100px;
         }
-        
+
         .col-md-4 {
             width: 350px;
             margin-right: 60px;
         }
-        
+
         #costCalculator {
             position: sticky;
             top: 20px;
@@ -243,69 +245,72 @@
             height: fit-content;
             background-color: rgba(255, 255, 255, 0.95);
         }
-        
+
         .cost-item {
             display: flex;
             justify-content: space-between;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             transform-origin: left;
             transition: transform 0.3s ease-out, opacity 0.3s ease-out;
         }
-        
+
         .cost-item span {
             transition: all 0.3s ease-out;
         }
-        
+
         .cost-item.updating span:last-child {
             transform: translateX(10px);
             opacity: 0;
         }
-        
+
         .cost-item.updated span:last-child {
             animation: slideIn 0.5s ease-out forwards;
         }
-        
+
         .cost-item.total {
             font-weight: bold;
             font-size: 1.2em;
-            border-top: 2px solid rgba(0,0,0,0.2);
+            border-top: 2px solid rgba(0, 0, 0, 0.2);
             margin-top: 10px;
         }
-        
+
         .cost-item.total.updated span:last-child {
             animation: popIn 0.5s ease-out forwards;
         }
-        
+
         @keyframes slideIn {
             0% {
                 transform: translateX(10px);
                 opacity: 0;
             }
+
             100% {
                 transform: translateX(0);
                 opacity: 1;
             }
         }
-        
+
         @keyframes popIn {
             0% {
                 transform: scale(1.1) translateX(10px);
                 opacity: 0;
             }
+
             50% {
                 transform: scale(1.2) translateX(0);
             }
+
             100% {
                 transform: scale(1) translateX(0);
                 opacity: 1;
             }
         }
-        
+
         #pageCountDisplay {
             margin-top: 15px;
             padding: 10px;
-            background-color: rgba(0,0,0,0.05);
+            background-color: rgba(0, 0, 0, 0.05);
             border-radius: 5px;
         }
 
@@ -315,7 +320,8 @@
                 align-items: center;
             }
 
-            .col-md-8, .col-md-4 {
+            .col-md-8,
+            .col-md-4 {
                 width: 100%;
                 margin: 0;
                 max-width: 1000px;
@@ -335,7 +341,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
             opacity: 0;
             transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
@@ -359,7 +365,7 @@
             transform: translateY(-30px) rotateX(5deg);
             opacity: 0;
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
 
         .modal.show .modal-content {
@@ -426,10 +432,21 @@
             opacity: 0;
         }
 
-        .cost-item:nth-child(1) { animation-delay: 0.1s; }
-        .cost-item:nth-child(2) { animation-delay: 0.2s; }
-        .cost-item:nth-child(3) { animation-delay: 0.3s; }
-        .cost-item:nth-child(4) { animation-delay: 0.4s; }
+        .cost-item:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .cost-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .cost-item:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .cost-item:nth-child(4) {
+            animation-delay: 0.4s;
+        }
 
         .cost-total {
             font-size: 1.2em;
@@ -461,11 +478,11 @@
 
         /* Enhanced shadow effects */
         .modal-header.scrolled {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .modal-footer.scrolled {
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
         }
 
         @keyframes fadeIn {
@@ -473,6 +490,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -484,6 +502,7 @@
                 opacity: 0;
                 transform: scaleY(0.95) translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: scaleY(1) translateY(0);
@@ -495,6 +514,7 @@
                 opacity: 0;
                 transform: scale(0.95);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1);
@@ -525,7 +545,9 @@
         }
 
         @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
+            to {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
         }
 
         .pricing-guide-container {
@@ -565,8 +587,15 @@
         }
 
         @keyframes pointing {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
         }
 
         .pricing-guide-button:hover {
@@ -800,6 +829,7 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -824,7 +854,8 @@
                 align-items: center;
             }
 
-            .col-md-8, .col-md-4 {
+            .col-md-8,
+            .col-md-4 {
                 width: 100%;
                 margin: 0;
                 max-width: 1000px;
@@ -883,12 +914,47 @@
 
         /* Optional: Add a subtle highlight effect */
         @keyframes highlightField {
-            0% { background-color: rgba(0, 166, 255, 0.1); }
-            100% { background-color: transparent; }
+            0% {
+                background-color: rgba(0, 166, 255, 0.1);
+            }
+
+            100% {
+                background-color: transparent;
+            }
         }
 
         .copies-group.show {
             animation: highlightField 1s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Radio button styling */
+        .form-group div {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            font-weight: normal;
+            color: #555;
+        }
+
+        .form-group input[type="radio"] {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
         }
     </style>
     <script>
@@ -927,7 +993,7 @@
                         body: formData
                     });
                     const data = await response.json();
-                    
+
                     if (data.page_count) {
                         filePageCounts[index] = data.page_count;
                         updatePageCountDisplay();
@@ -937,7 +1003,7 @@
                     console.error('Error getting page count:', error);
                 }
             } else {
-                filePageCounts[index] = 1; 
+                filePageCounts[index] = 1;
                 updatePageCountDisplay();
                 calculateTotalCost();
             }
@@ -945,34 +1011,33 @@
 
         function updatePageCountDisplay() {
             const display = document.getElementById('pageCountDisplay');
+            if (!display) return; // Avoid error if element does not exist
+
             let html = '<h3>Page Counts:</h3>';
-            
             Object.entries(filePageCounts).forEach(([index, count]) => {
                 const fileInput = document.querySelector(`input[type="file"][data-index="${index}"]`);
                 const fileName = fileInput?.files[0]?.name || 'File ' + (parseInt(index) + 1);
                 html += `<div>${fileName}: ${count} page(s)</div>`;
             });
-            
+
             display.innerHTML = html;
         }
 
-        function updateCostDisplay(elementId, value) {
-            const element = document.getElementById(elementId);
-            const costItem = element.closest('.cost-item');
 
-            costItem.classList.add('updating');
-            
-      
-            setTimeout(() => {
-                element.textContent = `Rs. ${value.toFixed(2)}`;
-                costItem.classList.remove('updating');
-                costItem.classList.add('updated');
-                
-                setTimeout(() => {
-                    costItem.classList.remove('updated');
-                }, 500);
-            }, 300);
+        function updatePageCountDisplay() {
+            const display = document.getElementById('pageCountDisplay');
+            if (!display) return; // Avoid error if element does not exist
+
+            let html = '<h3>Page Counts:</h3>';
+            Object.entries(filePageCounts).forEach(([index, count]) => {
+                const fileInput = document.querySelector(`input[type="file"][data-index="${index}"]`);
+                const fileName = fileInput?.files[0]?.name || 'File ' + (parseInt(index) + 1);
+                html += `<div>${fileName}: ${count} page(s)</div>`;
+            });
+
+            display.innerHTML = html;
         }
+
 
         function calculateTotalCost() {
             let baseCost = 0;
@@ -980,7 +1045,7 @@
             let sizeCost = 0;
             let copiesCost = 0;
 
-            
+
             Object.entries(filePageCounts).forEach(([index, pageCount]) => {
                 const printType = document.querySelector(`select[name="printType[]"][data-index="${index}"]`).value;
                 const copies = parseInt(document.querySelector(`input[name="copies[]"][data-index="${index}"]`).value) || 1;
@@ -993,7 +1058,7 @@
                 const sizeAdjustedCost = baseFileCost * sizeMultiplier;
                 const fileBindingCost = PRICES.binding[binding];
                 const totalFileCost = (sizeAdjustedCost + fileBindingCost) * copies;
-                
+
                 baseCost += baseFileCost;
                 bindingCost += fileBindingCost * copies;
                 sizeCost += (sizeAdjustedCost - baseFileCost);
@@ -1076,7 +1141,7 @@
         function handlePrintoutChange(event, index) {
             const printouts = parseInt(event.target.value) || 1;
             const copiesGroup = document.getElementById(`copiesGroup_${index}`);
-            
+
             if (printouts > 1) {
                 // Show the copies field
                 copiesGroup.style.display = 'block';
@@ -1092,23 +1157,23 @@
                     copiesGroup.style.display = 'none';
                 }, 400); // Match the transition duration
             }
-            
+
             calculateTotalCost();
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             fileCount = 0;
             addFileInput();
         });
 
-        document.addEventListener('scroll', function() {
+        document.addEventListener('scroll', function () {
             const modal = document.querySelector('.modal');
             if (!modal) return;
-            
+
             const header = modal.querySelector('.modal-header');
             const footer = modal.querySelector('.modal-footer');
             const content = document.getElementById('orderSummaryContent');
-            
+
             if (content.scrollTop > 10) {
                 header.classList.add('scrolled');
                 footer.classList.add('scrolled');
@@ -1121,7 +1186,7 @@
         function togglePricingGuide() {
             const button = document.querySelector('.pricing-guide-button');
             const card = document.querySelector('.pricing-card');
-            
+
             button.classList.toggle('active');
             card.classList.toggle('show');
         }
@@ -1130,9 +1195,9 @@
         document.addEventListener('click', (event) => {
             const card = document.querySelector('.pricing-card');
             const button = document.querySelector('.pricing-guide-button');
-            
-            if (!card.contains(event.target) && 
-                !button.contains(event.target) && 
+
+            if (!card.contains(event.target) &&
+                !button.contains(event.target) &&
                 button.classList.contains('active')) {
                 togglePricingGuide();
             }
@@ -1160,7 +1225,8 @@
             <li><a href="orders">Orders</a></li>
             <li><a href="notifications">Notifications</a></li>
             <li><a href="profile">Profile</a></li>
-            <li><button class="btn_logout" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
+            <li><button class="btn_logout"
+                    onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
         </ul>
     </div>
 
@@ -1179,7 +1245,7 @@
                         </button>
                         <div class="pricing-card">
                             <h2>Pricing Guide</h2>
-                            
+
                             <div class="section-title">Print Type</div>
                             <div class="price-row">
                                 <span>Black & White</span>
@@ -1195,7 +1261,7 @@
                                 <div class="size-icon">A3</div>
                                 <div class="size-details">
                                     <div class="size-dimensions">A3 (297 &#215; 420mm)</div>
-                                    <div class="size-cost">2    &#215; cost</div>
+                                    <div class="size-cost">2 &#215; cost</div>
                                 </div>
                             </div>
                             <div class="paper-size-row">
@@ -1209,7 +1275,7 @@
                                 <div class="size-icon">A5</div>
                                 <div class="size-details">
                                     <div class="size-dimensions">A5 (148 &#215; 210mm)</div>
-                                    <div class="size-cost">0.8  &#215; cost</div>
+                                    <div class="size-cost">0.8 &#215; cost</div>
                                 </div>
                             </div>
 
@@ -1223,14 +1289,29 @@
                                 <span class="binding-price">&#8377;20</span>
                             </div>
                         </div>
-                        
+
                         <form id="orderForm" action="submit_order" method="POST" enctype="multipart/form-data"
                             onsubmit="handleSubmit(event)">
                             <div id="fileInputContainer">
                             </div>
                             <button type="button" onclick="addFileInput()">Add File</button>
+                            <div class="form-group">
+                                <label>Payment Method:</label>
+                                <div>
+                                    <label>
+                                        <input type="radio" name="paymentMethod" value="cod" checked> Cash on Delivery
+                                        (COD)
+                                    </label>
+                                </div>
+                                <div>
+                                    <label>
+                                        <input type="radio" name="paymentMethod" value="online"> Online Payment
+                                    </label>
+                                </div>
+                            </div>
                             <input type="hidden" name="email" id="emailField">
-                            <button type="submit" name="action" value="placeOrder" class="submit-btn">Place Order</button>
+                            <button type="submit" name="action" value="placeOrder" class="submit-btn">Place
+                                Order</button>
                         </form>
                     </div>
                 </div>
@@ -1245,7 +1326,7 @@
                 <span class="close-modal">&times;</span>
             </div>
             <div id="orderSummaryContent">
-                
+
             </div>
             <div class="modal-footer">
                 <div id="successMessage" class="success-message">
@@ -1265,13 +1346,13 @@
         document.getElementById('emailField').value = localStorage.getItem('email');
         function handleSubmit(event) {
             event.preventDefault();
-            showOrderSummary();  
+            showOrderSummary();
         }
 
         function showOrderSummary() {
             const modal = document.getElementById('orderSummaryModal');
             const content = document.getElementById('orderSummaryContent');
-            
+
             let baseCost = 0;
             let bindingCost = 0;
             let sizeCost = 0;
@@ -1291,7 +1372,7 @@
                 const sizeMultiplier = PRICES.size_multiplier[size];
                 const sizeAdjustedCost = baseFileCost * sizeMultiplier;
                 const fileBindingCost = PRICES.binding[binding];
-                
+
                 baseCost += baseFileCost;
                 bindingCost += fileBindingCost * copies;
                 sizeCost += (sizeAdjustedCost - baseFileCost);
@@ -1400,16 +1481,20 @@
 
         function confirmOrder() {
             const formData = new FormData(document.getElementById("orderForm"));
-            const successMessage = document.getElementById('successMessage');
             const confirmBtn = document.getElementById('confirmBtn');
             const cancelBtn = document.getElementById('cancelBtn');
-            
+            const successMessage = document.getElementById('successMessage');
+
+            if (confirmBtn) confirmBtn.classList.add('loading');
+            if (cancelBtn) cancelBtn.disabled = true;
+            if (successMessage) successMessage.style.display = 'block';
+
             // Calculate total cost
             let baseCost = 0;
             let bindingCost = 0;
             let sizeCost = 0;
             let copiesCost = 0;
-            
+
             Object.entries(filePageCounts).forEach(([index, pageCount]) => {
                 const printType = document.querySelector(`select[name="printType[]"][data-index="${index}"]`).value;
                 const copies = parseInt(document.querySelector(`input[name="copies[]"][data-index="${index}"]`).value) || 1;
@@ -1421,7 +1506,7 @@
                 const sizeMultiplier = PRICES.size_multiplier[size];
                 const sizeAdjustedCost = baseFileCost * sizeMultiplier;
                 const fileBindingCost = PRICES.binding[binding];
-                
+
                 baseCost += baseFileCost;
                 bindingCost += fileBindingCost * copies;
                 sizeCost += (sizeAdjustedCost - baseFileCost);
@@ -1429,43 +1514,83 @@
             });
 
             const totalCost = baseCost + bindingCost + sizeCost + copiesCost;
-            
+
             // Add total cost to form data
             formData.append('total_cost', totalCost);
             formData.append('email', localStorage.getItem('email'));
-            
+
             confirmBtn.disabled = true;
             cancelBtn.disabled = true;
             confirmBtn.classList.add('loading');
-            
+
+            // Call backend to create Razorpay order
+            fetch("/create_order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ total_cost: totalCost })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.order_id) {
+                        var options = {
+                            "key": "rzp_test_uWQB1jUeTRrqGS",
+                            "amount": data.amount,
+                            "currency": data.currency,
+                            "name": "Printing Service",
+                            "description": "Print Order Payment",
+                            "order_id": data.order_id,
+                            "handler": function (response) {
+                                alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+                                submitOrder(formData, response.razorpay_payment_id);
+                            },
+                            "prefill": {
+                                "email": localStorage.getItem("email")
+                            },
+                            "theme": { "color": "#3399cc" }
+                        };
+
+                        var rzp1 = new Razorpay(options);
+                        rzp1.open();
+                    } else {
+                        throw new Error("Error creating Razorpay order.");
+                    }
+                })
+                .catch(error => {
+                    confirmBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    confirmBtn.classList.remove('loading');
+                    alert("Error: " + error.message);
+                });
+        }
+
+        function submitOrder(formData, payment_id) {
+            formData.append("payment_id", payment_id);
+
             fetch("submit_order", {
                 method: "POST",
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === "Order submitted successfully") {
-                    confirmBtn.classList.remove('loading');
-                    
-                    successMessage.style.display = 'block';
-                    setTimeout(() => {
-                        successMessage.classList.add('show');
-                    }, 10);
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === "Order submitted successfully") {
+                        document.getElementById('confirmBtn').classList.remove('loading');
+                        document.getElementById('successMessage').style.display = 'block';
 
-                    setTimeout(() => {
-                        window.location.href = "/dashboard";
-                    }, 2000);
-                } else {
-                    throw new Error("Failed to submit order");
-                }
-            })
-            .catch(error => {
-                confirmBtn.disabled = false;
-                cancelBtn.disabled = false;
-                confirmBtn.classList.remove('loading');
-                alert("Error: " + error.message);
-            });
+                        setTimeout(() => {
+                            window.location.href = "/dashboard";
+                        }, 2000);
+                    } else {
+                        throw new Error("Failed to submit order");
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('confirmBtn').disabled = false;
+                    document.getElementById('cancelBtn').disabled = false;
+                    document.getElementById('confirmBtn').classList.remove('loading');
+                    alert("Error: " + error.message);
+                });
         }
+
 
         if (!localStorage.getItem("email")) {
             window.location.href = "/login";

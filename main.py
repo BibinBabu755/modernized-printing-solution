@@ -8,6 +8,8 @@ from requests import post
 from datetime import datetime
 import PyPDF2
 import io
+import razorpay
+
 
 DB_USER = quote_plus(os.getenv("DB_USER", "user"))
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", "user"))
@@ -26,6 +28,11 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 CORS(app)
 
+RAZORPAY_KEY_ID = "rzp_test_uWQB1jUeTRrqGS"
+RAZORPAY_KEY_SECRET = "9AiZepOIynKtEPTlAqEf0JbK"
+
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
 
 @app.route("/submit_order", methods=["POST"])
 def submit_order():
@@ -34,10 +41,7 @@ def submit_order():
         file_details = []
         for file in files:
             file_url = upload_file(file=file)
-            file_details.append({
-                "url": file_url,
-                "filename": file.filename
-            })
+            file_details.append({"url": file_url, "filename": file.filename})
 
         print_type = request.form.getlist("printType[]")
         copies = request.form.getlist("copies[]")
@@ -47,13 +51,17 @@ def submit_order():
         notes = request.form.getlist("notes[]")
         email = request.form.get("email")
         total_cost = float(request.form.get("total_cost", 0))
+        payment_id = request.form.get("payment_id")
 
-        if not (files and print_type and copies and style and binding and paper_size):
-            return jsonify({"error": "Missing required fields"}), 400
+        if not payment_id:
+            return jsonify({"error": "Payment ID missing"}), 400
+        
+        
 
-        # Get last order to calculate queue position
         last_order = db.orders.find_one(sort=[("queue_position", -1)])
         queue_position = last_order["queue_position"] + 1 if last_order else 1
+
+        payment_status = "paid" if payment_id else "unpaid"
 
         order_details = {
             "files": file_details,
@@ -64,22 +72,40 @@ def submit_order():
             "paperSize": paper_size,
             "notes": notes,
             "email": email,
-            "total_cost": total_cost,  # Added total_cost here
-            "timestamp": datetime.now(),
+            "total_cost": total_cost,
+            "payment_id": payment_id,
+            "payment_status": payment_status,
+            "timestamp": datetime.now().isoformat(),
             "status": "queued",
             "queue_position": queue_position
         }
 
         db.orders.insert_one(order_details)
-        order_details["_id"] = str(order_details["_id"])
-        return jsonify({
-            "message": "Order submitted successfully",
-            "orderDetails": order_details,
-            "queue_position": queue_position
-        }), 201
+        return jsonify({"message": "Order submitted successfully"}), 201
 
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+    
+@app.route("/create_order", methods=["POST"])
+def create_order():
+    try:
+        data = request.json
+        amount = int(data.get("total_cost", 0) * 100)  # Convert to paise (INR)
+        currency = "INR"
+        receipt = f"receipt_{int(datetime.timestamp(datetime.now()))}"
+
+        razorpay_order = razorpay_client.order.create({
+            "amount": amount,
+            "currency": currency,
+            "receipt": receipt,
+            "payment_capture": 1
+        })
+
+        return jsonify({"order_id": razorpay_order["id"], "amount": amount, "currency": currency})
+    except Exception as e:
+        return jsonify({"error": "Error creating order", "details": str(e)}), 500
+
 
 @app.route("/get_user", methods=["GET"])
 def get_user():
