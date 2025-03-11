@@ -1,6 +1,12 @@
 from pymongo import MongoClient
 import os
 from flask import Flask, request, jsonify, send_file, session, send_from_directory, render_template
+import win32evtlog
+import win32evtlogutil
+import win32con
+import json
+import time
+
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from urllib.parse import quote_plus
@@ -15,8 +21,6 @@ DB_USER = quote_plus(os.getenv("DB_USER", "user"))
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", "user"))
 DB_NAME = os.getenv("DB_NAME", "bibs")
 DB_CLUSTER = os.getenv("DB_CLUSTER", "cluster0.mx7kl.mongodb.net")
-
-
 
 db = MongoClient(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")[DB_NAME]
 print(f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_CLUSTER}/{DB_NAME}")
@@ -33,9 +37,45 @@ RAZORPAY_KEY_SECRET = "9AiZepOIynKtEPTlAqEf0JbK"
 
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
+# Event IDs for print jobs
+PRINT_JOB_STARTED = 307
+PRINT_JOB_COMPLETED = 308
+
+def fetch_print_events():
+    server = 'Application'
+    log_type = 'Microsoft-Windows-PrintService/Operational'
+    hand = win32evtlog.OpenEventLog(None, log_type)
+    total = win32evtlog.GetNumberOfEventLogRecords(hand)
+    events = []
+
+    for i in range(total):
+        try:
+            event = win32evtlog.ReadEventLog(hand, win32evtlog.EVENTLOG_FORWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ, 0)
+            for e in event:
+                if e.EventID in (PRINT_JOB_STARTED, PRINT_JOB_COMPLETED):
+                    events.append(parse_event(e))
+        except Exception as e:
+            print(f"Error reading event log: {e}")
+            break
+
+    return events
+
+def parse_event(event):
+    event_data = {
+        'EventID': event.EventID,
+        'TimeGenerated': event.TimeGenerated,
+        'SourceName': event.SourceName,
+        'Message': win32evtlogutil.SafeFormatMessage(event, win32con.EVENTLOG_SUCCESS)
+    }
+    return event_data
+
+@app.route("/fetch_print_events", methods=["GET"])
+def fetch_print_events_route():
+    events = fetch_print_events()
+    return jsonify(events), 200
 
 @app.route("/submit_order", methods=["POST"])
-def submit_order():
+def submit_order():  
     try:
         payment_id = request.form.get("payment_id")  # Get Razorpay payment ID
         email = request.form.get("email")
@@ -63,20 +103,32 @@ def submit_order():
             "notes": request.form.getlist("notes[]"),
             "total_cost": float(request.form.get("total_cost", 0)),
             "payment_id": payment_id,  # Store payment ID if available
-            "payment_status": payment_status,  # ✅ Store payment status
+            "payment_status": payment_status,  # Store payment status
             "timestamp": datetime.now().isoformat(),
             "status": "queued"
         }
 
-        # ✅ Insert into MongoDB
+        # Insert into MongoDB
         db.orders.insert_one(order_details)
+        
+        # Send notification for new order
+        notification = {
+            "email": email,
+            "order_id": str(order_details["_id"]),
+            "type": "order_created",
+            "message": "Your order has been successfully submitted",
+            "timestamp": datetime.now().isoformat(),
+            "status": "unread"
+        }
+        db.notifications.insert_one(notification)
 
         return jsonify({"message": "Order submitted successfully"}), 201
 
     except Exception as e:
         import traceback
-        print("🔥 Error in submit_order:", traceback.format_exc())
+        print(" Error in submit_order:", traceback.format_exc())
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
 
 
     
@@ -187,6 +239,16 @@ def get_orders():
 
 @app.route("/get_orders_overview", methods=["GET"])
 def get_orders_overview():
+    # New endpoint to fetch order stats
+    total_orders = db.orders.count_documents({})
+    completed_orders = db.orders.count_documents({"status": "completed"})
+    return jsonify({"totalOrders": total_orders, "completedOrders": completed_orders}), 200
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(base_dir, "admin.html")
+
+@app.route("/user_orders", methods=["GET"])
+def user_orders():
     if "user" not in session:
         return jsonify({"error": "User not logged in"}), 401  # Unauthorized
 
@@ -341,8 +403,6 @@ def admin():
     try:
         return send_from_directory(os.path.dirname(__file__), "admin.html")
 
-
-
     except Exception as e:
         app.logger.error(f"Error loading admin page: {str(e)}", exc_info=True)
         return jsonify({
@@ -463,6 +523,7 @@ def logout():
         return jsonify({"message": "Logged out successfully"}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
 def logout_page():
     try:
         file_path = os.path.join(os.path.dirname(__file__), "index.html")
@@ -490,6 +551,17 @@ def process_next_order():
             return_document=True
         )
         if next_order:
+            # Send processing notification
+            notification = {
+                "email": next_order["email"],
+                "order_id": str(next_order["_id"]),
+                "type": "order_processing",
+                "message": "Your order is now being processed",
+                "timestamp": datetime.now().isoformat(),
+                "status": "unread"
+            }
+            db.notifications.insert_one(notification)
+            
             return jsonify({
                 "message": "Processing next order", 
                 "order_id": str(next_order["_id"])
@@ -497,6 +569,7 @@ def process_next_order():
         return jsonify({"message": "No orders in queue"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/complete_order", methods=["POST"])
 def complete_order():
@@ -512,10 +585,22 @@ def complete_order():
         )
         
         if result:
+            # Send completion notification
+            notification = {
+                "email": result["email"],
+                "order_id": str(result["_id"]),
+                "type": "order_completed",
+                "message": "Your order has been completed",
+                "timestamp": datetime.now().isoformat(),
+                "status": "unread"
+            }
+            db.notifications.insert_one(notification)
+            
             return jsonify({"message": "Order marked as completed"}), 200
         return jsonify({"error": "Order not found or not in processing state"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/get_pdf_page_count", methods=["POST"])
 def get_pdf_page_count():
@@ -539,5 +624,5 @@ def get_pdf_page_count():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     app.run(port=5000, debug=True)
