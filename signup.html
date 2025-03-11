@@ -97,7 +97,6 @@
             background-color: #008e9d;
             color: black;
         }
-        
     </style>
 </head>
 
@@ -105,7 +104,7 @@
     <div class="container">
         <div class="signup-box">
             <h2>Create Account</h2>
-            <form>
+            <form id="signup-form">
                 <div class="name-fields">
                     <div class="input-group">
                         <label for="firstName">First Name</label>
@@ -116,13 +115,13 @@
                         <input type="text" id="lastName" placeholder="Last name" required>
                     </div>
                 </div>
-                <div class="input-group" label for="Designation">Choose your Designation:</label>
+                <div class="input-group">
+                    <label for="Designation">Choose your Designation:</label>
                     <select name="Designation" id="Designation" required>
                         <option value="" disabled selected>Designation</option>
                         <option value="Faculty">Faculty</option>
                         <option value="Student">Student</option>
                     </select>
-                    
                 </div>
                 <div class="input-group">
                     <label for="email">Email Address</label>
@@ -131,7 +130,7 @@
                 <div class="input-group">
                     <label for="phone">Phone Number</label>
                     <input type="tel" id="phone" placeholder="Enter your phone number" required>
-                </div>                
+                </div>
                 <div class="input-group">
                     <label for="password">Create Password</label>
                     <input type="password" id="password" placeholder="Create a password" required>
@@ -144,46 +143,92 @@
             </form>
         </div>
     </div>
-    <script>
-        const form = document.querySelector('form');
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUYR-bTjZFUbCBKUIJX_RFwnockOymYYk",
+            authDomain: "modernized-printing-solution.firebaseapp.com",
+            projectId: "modernized-printing-solution",
+            storageBucket: "modernized-printing-solution.firebasestorage.app",
+            messagingSenderId: "551681124613",
+            appId: "1:551681124613:web:9903b847a0f50159652f6c",
+            measurementId: "G-KVML75H9K4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const form = document.getElementById('signup-form');
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const firstName = document.querySelector('#firstName').value;
-            const lastName = document.querySelector('#lastName').value;
-            const email = document.querySelector('#email').value;
-            const phone = document.querySelector('#phone').value;
-            const password = document.querySelector('#password').value;
-            const confirmPassword = document.querySelector('#confirmPassword').value;
 
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
             if (password !== confirmPassword) {
                 alert('Passwords do not match');
                 return;
             }
 
-            if (email == '' || firstName == '' || lastName == '' || password == '') {}
+            // Validate required fields
+            if (!email || !firstName || !lastName || !password || !phone) {
+                alert('Please fill in all fields');
+                return;
+            }
 
-            fetch('/api/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    email,
-                    phone,
-                    password,
+            // Create user with Firebase
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Send email verification
+                    sendEmailVerification(userCredential.user)
+                        .then(() => {
+                            alert('Verification email sent. Please check your inbox.');
+
+                        });
+
+                    // Send additional user data to your backend
+                    fetch('/api/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            uid: userCredential.user.uid,
+                            firstName,
+                            lastName,
+                            email,
+                            phone,
+                            password,
+                        })
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                            } else {
+                                
+                                window.location.href = '/login'; // Redirect to login page
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error storing user data:', error);
+                        });
                 })
-            }).then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        alert('Account created successfully');
-                        window.location.href = '/login';
-                    }
+                .catch((error) => {
+                    // Handle Firebase errors
+                    alert(error.message);
                 });
-            });
+        });
     </script>
 </body>
 
