@@ -1,368 +1,405 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Owner Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
-            background-size: cover;
-            background-color: #f4f4f9;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat
+          center center fixed;
+        background-size: cover;
+        background-color: #f4f4f9;
+      }
 
-        .header {
-            color: white;
-            padding: 15px;
-            font-size: 24px;
-            font-weight: bold;
-            position: relative;
-            width: 30%;
-            top: 0;
-            left: 0;
-            margin-left: 270px;
-            padding: 20px;
-            color: #ffffff;
-            background-color: #00a6ff6d;
-            border-radius: 30px;
-            text-align: center;
-        }
+      .header {
+        color: white;
+        padding: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        position: relative;
+        width: 30%;
+        top: 0;
+        left: 0;
+        margin-left: 270px;
+        padding: 20px;
+        color: #ffffff;
+        background-color: #00a6ff6d;
+        border-radius: 30px;
+        text-align: center;
+      }
 
-        #logoutBtn {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
+      #logoutBtn {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+      }
 
-        #logoutBtn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-50%) scale(1.05);
-        }
+      #logoutBtn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-50%) scale(1.05);
+      }
 
-        #logoutBtn span {
-            font-size: 16px;
-        }
+      #logoutBtn span {
+        font-size: 16px;
+      }
 
-        #logoutBtn svg {
-            transition: transform 0.3s ease;
-        }
+      #logoutBtn svg {
+        transition: transform 0.3s ease;
+      }
 
-        #logoutBtn:hover svg {
-            transform: translateX(3px);
-        }
+      #logoutBtn:hover svg {
+        transform: translateX(3px);
+      }
 
-        body {
-            padding-top: 60px;
-        }
+      body {
+        padding-top: 60px;
+      }
 
-        .dashboard-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
+      .dashboard-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+      }
 
-        .card {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            transition: transform 0.3s;
-        }
+      .card {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        transition: transform 0.3s;
+      }
 
-        .card:hover {
-            transform: scale(1.05);
-        }
+      .card:hover {
+        transform: scale(1.05);
+      }
 
-        .card h2 {
-            margin: 0 0 10px;
-        }
+      .card h2 {
+        margin: 0 0 10px;
+      }
 
-        .order-status, .payment-status {
-            margin-top: 10px;
-            font-weight: bold;
-        }
+      .order-status,
+      .payment-status {
+        margin-top: 10px;
+        font-weight: bold;
+      }
 
-        .order-status.processing { color: orange; }
-        .order-status.completed { color: green; }
-        .payment-status.pending { color: red; }
-        .payment-status.confirmed { color: green; }
+      .order-status.processing {
+        color: orange;
+      }
+      .order-status.completed {
+        color: green;
+      }
+      .payment-status.pending {
+        color: red;
+      }
+      .payment-status.confirmed {
+        color: green;
+      }
 
-        .confirm-btn {
-            margin-top: 10px;
-            padding: 8px 12px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+      .confirm-btn {
+        margin-top: 10px;
+        padding: 8px 12px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
 
-        .confirm-btn:hover {
-            background-color: #218838;
-        }
+      .confirm-btn:hover {
+        background-color: #218838;
+      }
 
-        .order-list {
-            text-align: left;
-            margin-top: 10px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+      .order-list {
+        text-align: left;
+        margin-top: 10px;
+        padding: 10px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        .order-item {
-            border-bottom: 1px solid #ddd;
-            padding: 8px 0;
-        }
+      .order-item {
+        border-bottom: 1px solid #ddd;
+        padding: 8px 0;
+      }
 
-        .file-list {
-            margin-top: 5px;
-            font-size: 0.9em;
-            color: #666;
-        }
-        
-        .order-queue {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-        
-        .order-queue h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: #333;
-        }
+      .file-list {
+        margin-top: 5px;
+        font-size: 0.9em;
+        color: #666;
+      }
 
-        .customer-list {
-            margin-top: 20px;
-        }
-        
-        .customer-header {
-            display: flex;
-            font-weight: bold;
-            padding: 10px 0;
-            border-bottom: 2px solid #ddd;
-        }
-        
-        .customer-header span {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .customer-item {
-            display: flex;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .customer-item > div {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .priority-select {
-            padding: 5px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-        
-        .action-buttons button {
-            margin: 0 5px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-        }
+      .order-queue {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
 
-        .customer-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
+      .order-queue h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #333;
+      }
 
-        .customer-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
+      .customer-list {
+        margin-top: 20px;
+      }
 
-        .customer-card:hover {
-            transform: translateY(-5px);
-        }
+      .customer-header {
+        display: flex;
+        font-weight: bold;
+        padding: 10px 0;
+        border-bottom: 2px solid #ddd;
+      }
 
-        .customer-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
+      .customer-header span {
+        flex: 1;
+        text-align: center;
+      }
 
-        .customer-card-name {
-            font-size: 18px;
-            font-weight: bold;
-        }
+      .customer-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
 
-        .customer-card-status {
-            padding: 5px 10px;
-            border-radius: 12px;
-            font-size: 14px;
-        }
+      .customer-item > div {
+        flex: 1;
+        text-align: center;
+      }
 
-        .status-pending { background: #ffeb3b; color: #000; }
-        .status-processing { background: #2196f3; color: #fff; }
-        .status-completed { background: #4caf50; color: #fff; }
+      .priority-select {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
 
-        .customer-card-progress {
-            margin: 15px 0;
-        }
+      .action-buttons button {
+        margin: 0 5px;
+        padding: 5px 10px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+      }
 
-        .progress-bar {
-            height: 8px;
-            background: #eee;
-            border-radius: 4px;
-            overflow: hidden;
-        }
+      .customer-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
 
-        .progress-bar-fill {
-            height: 100%;
-            background: #2196f3;
-            transition: width 0.3s;
-        }
+      .customer-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+      }
 
-        .customer-card-actions {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
+      .customer-card:hover {
+        transform: translateY(-5px);
+      }
 
-        .customer-card-action {
-            flex: 1;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+      .customer-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
 
-        .customer-card-action.view {
-            background: #2196f3;
-            color: white;
-        }
+      .customer-card-name {
+        font-size: 18px;
+        font-weight: bold;
+      }
 
-        .customer-card-action.contact {
-            background: #4caf50;
-            color: white;
-        }
+      .customer-card-status {
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+
+      .status-pending {
+        background: #ffeb3b;
+        color: #000;
+      }
+      .status-processing {
+        background: #2196f3;
+        color: #fff;
+      }
+      .status-completed {
+        background: #4caf50;
+        color: #fff;
+      }
+
+      .customer-card-progress {
+        margin: 15px 0;
+      }
+
+      .progress-bar {
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        background: #2196f3;
+        transition: width 0.3s;
+      }
+
+      .customer-card-actions {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .customer-card-action {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .customer-card-action.view {
+        background: #2196f3;
+        color: white;
+      }
+
+      .customer-card-action.contact {
+        background: #4caf50;
+        color: white;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="header">
-        Owner Dashboard
-        <button id="logoutBtn" onclick="window.location.href='login'">
-            <span>Logout</span>
-            <svg viewBox="0 0 24 24" width="24" height="24">
-                <path fill="currentColor" d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/>
-            </svg>
-        </button>
+      Owner Dashboard
+      <button id="logoutBtn" onclick="window.location.href='login'">
+        <span>Logout</span>
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path
+            fill="currentColor"
+            d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"
+          />
+        </svg>
+      </button>
     </div>
 
     <div class="dashboard-container">
-        <div class="card" id="overview">
-            <h2>Overview</h2>
-            <div style="height: 300px; position: relative;">
-                <canvas id="ordersChart" style="max-width: 400px; margin: auto;"></canvas>
-                <div id="chartError" style="display: none; color: red; text-align: center; margin-top: 20px;">
-                    Unable to load chart data
-                </div>
-            </div>
+      <div class="card" id="overview">
+        <h2>Overview</h2>
+        <div style="height: 300px; position: relative">
+          <canvas
+            id="ordersChart"
+            style="max-width: 400px; margin: auto"
+          ></canvas>
+          <div
+            id="chartError"
+            style="
+              display: none;
+              color: red;
+              text-align: center;
+              margin-top: 20px;
+            "
+          >
+            Unable to load chart data
+          </div>
         </div>
+      </div>
 
-        <div class="card" id="customers">
-            <h2>Manage Customers</h2>
-            <div class="customer-list" id="customers-list">
-                <div class="customer-header">
-                    <span>Name</span>
-                    <span>Last Order</span>
-                    <span>Priority</span>
-                    <span>Status</span>
-                    <span>Actions</span>
-                </div>
-                <div class="customer-cards" id="customer-cards">
-                    <!-- Customer cards will be dynamically inserted here -->
-                </div>
-            </div>
+      <div class="card" id="customers">
+        <h2>Manage Customers</h2>
+        <div class="customer-list" id="customers-list">
+          <div class="customer-header">
+            <span>Name</span>
+            <span>Last Order</span>
+            <span>Priority</span>
+            <span>Status</span>
+            <span>Actions</span>
+          </div>
+          <div class="customer-cards" id="customer-cards">
+            <!-- Customer cards will be dynamically inserted here -->
+          </div>
         </div>
+      </div>
 
-        <div class="card" id="orders">
-            <h2>Orders</h2>
-            <p>Track and manage incoming orders.</p>
-            <div class="order-list" id="orders-list"></div>
-            <div class="order-queue">
-                <h3>Order Queue</h3>
-                <div id="queue-list"></div>
-                <button class="confirm-btn" onclick="processNextOrder()">Process Next Order</button>
-            </div>
+      <div class="card" id="orders">
+        <h2>Orders</h2>
+        <p>Track and manage incoming orders.</p>
+        <div class="order-list" id="orders-list"></div>
+        <div class="order-queue">
+          <h3>Order Queue</h3>
+          <div id="queue-list"></div>
+          <button class="confirm-btn" onclick="processNextOrder()">
+            Process Next Order
+          </button>
         </div>
+      </div>
 
-        <div class="card" id="payments">
-            <h2>Payments</h2>
-            <p>Confirm and manage payments.</p>
-            <div class="order-list" id="payments-list"></div>
-        </div>
+      <div class="card" id="payments">
+        <h2>Payments</h2>
+        <p>Confirm and manage payments.</p>
+        <div class="order-list" id="payments-list"></div>
+      </div>
     </div>
 
     <script>
-        // Customer Management Functions
-        async function fetchCustomers() {
-            try {
-                const response = await fetch('/get_customers');
-                const data = await response.json();
-                displayCustomers(data.customers);
-            } catch (error) {
-                console.error('Error fetching customers:', error);
-                showToast('Error fetching customers');
-            }
+      // Customer Management Functions
+      async function fetchCustomers() {
+        try {
+          const response = await fetch("/get_customers");
+          const data = await response.json();
+          displayCustomers(data.customers);
+        } catch (error) {
+          console.error("Error fetching customers:", error);
+          showToast("Error fetching customers");
         }
+      }
 
-        function displayCustomers(customers) {
-            const container = document.getElementById('customer-cards');
-            container.innerHTML = '';
+      function displayCustomers(customers) {
+        const container = document.getElementById("customer-cards");
+        container.innerHTML = "";
 
-            customers.forEach(customer => {
-                const card = document.createElement('div');
-                card.className = 'customer-card';
-                
-                const lastOrder = new Date(customer.last_order).toLocaleString();
-                const status = customer.status || 'queued';
-                
-                card.innerHTML = `
+        customers.forEach((customer) => {
+          const card = document.createElement("div");
+          card.className = "customer-card";
+
+          const lastOrder = new Date(customer.last_order).toLocaleString();
+          const status = customer.status || "queued";
+
+          card.innerHTML = `
                     <div class="customer-card-header">
-                        <div class="customer-card-name">${customer.firstName} ${customer.lastName}</div>
+                        <div class="customer-card-name">${customer.firstName} ${
+            customer.lastName
+          }</div>
                         <div class="customer-card-status status-${status}">${status}</div>
                     </div>
                     <div class="customer-card-details">
@@ -371,216 +408,388 @@
                     </div>
                     <div class="customer-card-progress">
                         <div class="progress-bar">
-                            <div class="progress-bar-fill" style="width: ${getProgressWidth(status)}"></div>
+                            <div class="progress-bar-fill" style="width: ${getProgressWidth(
+                              status
+                            )}"></div>
                         </div>
                     </div>
                     <div class="customer-card-actions">
-                        <button class="customer-card-action view" onclick="viewCustomerDetails('${customer.email}')">View Details</button>
-                        <button class="customer-card-action contact" onclick="contactCustomer('${customer.email}')">Contact</button>
+                        <button class="customer-card-action view" onclick="viewCustomerDetails('${
+                          customer.email
+                        }')">View Details</button>
+                        <button class="customer-card-action contact" onclick="contactCustomer('${
+                          customer.email
+                        }', '${customer.phone}'
+                        )">Contact</button>
                     </div>
                     <div class="priority-control">
                         <label>Priority:</label>
                         <select class="priority-select" 
                                 data-email="${customer.email}"
-                                onchange="updatePriority('${customer.email}', this.value)">
-                            <option value="1" ${customer.priority == 1 ? 'selected' : ''}>Low</option>
-                            <option value="2" ${customer.priority == 2 ? 'selected' : ''}>Medium</option>
-                            <option value="3" ${customer.priority == 3 ? 'selected' : ''}>High</option>
+                                onchange="updatePriority('${
+                                  customer.email
+                                }', this.value)">
+                            <option value="1" ${
+                              customer.priority == 1 ? "selected" : ""
+                            }>Low</option>
+                            <option value="2" ${
+                              customer.priority == 2 ? "selected" : ""
+                            }>Medium</option>
+                            <option value="3" ${
+                              customer.priority == 3 ? "selected" : ""
+                            }>High</option>
                         </select>
                     </div>
                 `;
-                container.appendChild(card);
-            });
+          container.appendChild(card);
+        });
+      }
+
+      function contactCustomer(email, phone) {
+    // Create modal container
+    let modal = document.createElement("div");
+    modal.id = "contactModal";
+    modal.style.position = "fixed";
+    modal.style.top = "0";
+    modal.style.left = "0";
+    modal.style.width = "100vw";
+    modal.style.height = "100vh";
+    modal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    modal.style.display = "flex";
+    modal.style.alignItems = "center";
+    modal.style.justifyContent = "center";
+    modal.style.zIndex = "1000";
+
+    // Create modal content
+    let modalContent = document.createElement("div");
+    modalContent.style.background = "white";
+    modalContent.style.padding = "20px";
+    modalContent.style.borderRadius = "8px";
+    modalContent.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+    modalContent.style.position = "relative";
+    modalContent.style.minWidth = "300px";
+
+    // Close button
+    let closeButton = document.createElement("span");
+    closeButton.innerHTML = "&times;";
+    closeButton.style.position = "absolute";
+    closeButton.style.top = "10px";
+    closeButton.style.right = "15px";
+    closeButton.style.cursor = "pointer";
+    closeButton.style.fontSize = "20px";
+    closeButton.onclick = function () {
+        document.body.removeChild(modal);
+    };
+
+    // Content inside modal
+    modalContent.innerHTML = `
+        <h3>Contact Customer</h3>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+    `;
+
+    modalContent.appendChild(closeButton);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
+
+      function getProgressWidth(status) {
+        switch (status) {
+          case "queued":
+            return "33%";
+          case "processing":
+            return "66%";
+          case "completed":
+            return "100%";
+          default:
+            return "0%";
         }
+      }
 
-        function getProgressWidth(status) {
-            switch(status) {
-                case 'queued': return '33%';
-                case 'processing': return '66%';
-                case 'completed': return '100%';
-                default: return '0%';
-            }
+      async function updatePriority(email, priority) {
+        try {
+          const response = await fetch("/update_priority", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, priority }),
+          });
+          const result = await response.json();
+          if (result.message) {
+            showToast("Priority updated successfully");
+          }
+        } catch (error) {
+          console.error("Error updating priority:", error);
+          showToast("Error updating priority");
         }
+      }
 
-        async function updatePriority(email, priority) {
-            try {
-                const response = await fetch('/update_priority', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({email, priority})
-                });
-                const result = await response.json();
-                if (result.message) {
-                    showToast('Priority updated successfully');
-                }
-            } catch (error) {
-                console.error('Error updating priority:', error);
-                showToast('Error updating priority');
-            }
+      // Order Management Functions
+      async function fetchOrders() {
+        try {
+          const response = await fetch("/get_all_orders");
+          const data = await response.json();
+          displayOrders(data.orders);
+        } catch (error) {
+          console.error("Error fetching orders:", error);
+          showToast("Error fetching orders");
         }
+      }
 
-        // Order Management Functions
-        async function fetchOrders() {
-            try {
-                const response = await fetch('/get_all_orders');
-                const data = await response.json();
-                displayOrders(data.orders);
-            } catch (error) {
-                console.error('Error fetching orders:', error);
-                showToast('Error fetching orders');
-            }
-        }
+      function displayOrders(orders) {
+        const ordersList = document.getElementById("orders-list");
+        const paymentsList = document.getElementById("payments-list");
 
-        function displayOrders(orders) {
-            const ordersList = document.getElementById('orders-list');
-            const paymentsList = document.getElementById('payments-list');
-            
-            ordersList.innerHTML = '';
-            paymentsList.innerHTML = '';
+        ordersList.innerHTML = "";
+        paymentsList.innerHTML = "";
+        let i = -1;
+        orders.forEach((order) => {
+          if (order.status !== "queued" && order.status !== "completed") {
+            i += 1;
+          }
+          const orderItem = document.createElement("div");
+          orderItem.className = "order-item";
 
-            orders.forEach(order => {
-                const orderItem = document.createElement('div');
-                orderItem.className = 'order-item';
-                
-                const orderDetails = document.createElement('div');
-                orderDetails.innerHTML = `
+          const orderDetails = document.createElement("div");
+          orderDetails.innerHTML = `
                     <strong>Order ID:</strong> ${order._id}<br>
-                    <strong>Customer:</strong> ${order.user_name || 'Unknown'}<br>
-                    <strong>Status:</strong> <span class="order-status ${order.status.toLowerCase()}" id="order-status-${order._id}">${order.status}</span>
-                    <button class="confirm-btn" onclick="updateOrderStatus('${order._id}', 'Completed')">Mark as Completed</button>
+                    <strong>Customer:</strong> ${
+                      order.user_name || "Unknown"
+                    }<br>
+                    <strong>Status:</strong> <span class="order-status ${order.status.toLowerCase()}" id="order-status-${
+            order._id
+          }">${order.status}</span>
+                    <button class="confirm-btn" onclick="updateOrderStatus('${
+                      order._id
+                    }', 'Completed')">Mark as Completed</button>
                 `;
-                
-                const fileList = document.createElement('div');
-                fileList.className = 'file-list';
-                fileList.innerHTML = '<strong>Files:</strong><br>' + 
-                    order.files.map(file => 
-                        `<a href="${file.url}" target="_blank">${file.filename}</a>`
-                    ).join('<br>');
+          // if i = 0, add a print button too
+          if (i == 0) {
+            orderDetails.innerHTML += `
+                <button class="confirm-btn" onclick="printOrder('${order._id}')">Print Order</button>
+            `;
+          }
 
-                orderItem.appendChild(orderDetails);
-                orderItem.appendChild(fileList);
-                ordersList.appendChild(orderItem);
+          const fileList = document.createElement("div");
+          fileList.className = "file-list";
+          fileList.innerHTML =
+            "<strong>Files:</strong><br>" +
+            order.files
+              .map(
+                (file) =>
+                  `<a href="${file.url}" target="_blank">${file.filename}</a>`
+              )
+              .join("<br>");
 
-                const paymentItem = document.createElement('div');
-                paymentItem.className = 'order-item';
-                paymentItem.innerHTML = `
+          orderItem.appendChild(orderDetails);
+          orderItem.appendChild(fileList);
+          if (order.status !== "queued" && order.status !== "completed") {
+            ordersList.appendChild(orderItem);
+          }
+
+          const paymentItem = document.createElement("div");
+          paymentItem.className = "order-item";
+          paymentItem.innerHTML = `
                     Order ID: ${order._id} - 
-                    <span class="payment-status ${order.paymentStatus || 'pending'}" id="payment-status-${order._id}">${order.paymentStatus || 'Pending'}</span> 
-                    <button class="confirm-btn" onclick="confirmPayment('${order._id}')">Confirm Payment</button>
+                    <span class="payment-status ${
+                      order.paymentStatus || "pending"
+                    }" id="payment-status-${order._id}">${
+            order.paymentStatus || "Pending"
+          }</span> 
+                    <button class="confirm-btn" onclick="confirmPayment('${
+                      order._id
+                    }')">Confirm Payment</button>
                 `;
-                paymentsList.appendChild(paymentItem);
-            });
-        }
+          if (order.status == "completed") {
+            paymentsList.appendChild(paymentItem);
+          }
+        });
+      }
 
-        // Order Queue Functions
-        async function fetchOrderQueue() {
-            try {
-                const response = await fetch('/get_order_queue');
-                const data = await response.json();
-                const queueList = document.getElementById('queue-list');
-                queueList.innerHTML = '';
+      // Order Queue Functions
+      async function fetchOrderQueue() {
+        let user_position_map = {};
 
-                data.orders.forEach(order => {
-                    const div = document.createElement('div');
-                    div.className = 'order-item';
-                    div.textContent = `Order #${order._id} - Position: ${order.queue_position}`;
-                    queueList.appendChild(div);
-                });
-            } catch (error) {
-                console.error('Error fetching order queue:', error);
-                showToast('Error fetching order queue');
+        try {
+          const response = await fetch("/get_order_queue");
+          const data = await response.json();
+          const queueList = document.getElementById("queue-list");
+          queueList.innerHTML = "";
+
+          let pos = 1;
+          data.orders.forEach((order) => {
+            if (user_position_map[order.email] === undefined) {
+              user_position_map[order.email] = pos;
+              pos += 1;
             }
+          });
+
+          data.orders.forEach((order) => {
+            const div = document.createElement("div");
+            div.className = "order-item";
+            div.id = `order-${order._id}`;
+            div.textContent = `Order #${order._id} - Position: ${
+              user_position_map[order.email]
+            }`;
+            queueList.appendChild(div);
+            i += 1;
+          });
+        } catch (error) {
+          console.error("Error fetching order queue:", error);
+          showToast("Error fetching order queue");
+        }
+      }
+
+      async function printOrder(orderId) {
+        try {
+          const response = await fetch("/get_order_by_id?order_id=" + orderId);
+          const data = await response.json();
+
+          const files = data.order.files;
+
+          for (const fileUrl of files) {
+            const fileResponse = await fetch(`/fileproxy?url=${fileUrl}`);
+            const fileBlob = await fileResponse.blob();
+
+            // Create a URL for the file
+            const fileURL = URL.createObjectURL(fileBlob);
+
+            // Create an iframe to trigger print dialog
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            document.body.appendChild(iframe);
+
+            iframe.onload = function () {
+              iframe.contentWindow.focus();
+              setTimeout(() => {
+                iframe.contentWindow.print();
+              }, 500); // Delay to ensure print dialog opens
+            };
+
+            iframe.src = fileURL;
+
+            iframe.contentWindow.onafterprint = function () {
+              document.body.removeChild(iframe);
+            };
+          }
+        } catch (error) {
+          console.error("Error fetching order:", error);
+        }
+      }
+
+      function updateOrderStatus(orderId, newStatus) {
+        fetch("/mark_as_completed", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ order_id: orderId }),
+        });
+      }
+
+      async function processNextOrder() {
+        // take first element in queue-list
+
+        const orderId = document.getElementById("queue-list").firstChild.id;
+        if (!orderId) {
+          showToast("No orders in queue");
+          return;
         }
 
-        async function processNextOrder() {
-            try {
-                const response = await fetch('/process_next_order', { method: 'POST' });
-                const result = await response.json();
-                if (result.message) {
-                    fetchOrderQueue();
-                    fetchOrders();
-                    showToast('Processing next order');
-                }
-            } catch (error) {
-                console.error('Error processing next order:', error);
-                showToast('Error processing next order');
-            }
-        }
-
-        // Initialization
-        window.onload = function() {
-            fetchCustomers();
-            fetchOrders();
-            fetchOrderStats();
+        try {
+          const response = await fetch("/process_next_order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ orderId }),
+          });
+          const result = await response.json();
+          if (result.message) {
             fetchOrderQueue();
+            fetchOrders();
+            showToast("Processing next order");
+          }
+        } catch (error) {
+          console.error("Error processing next order:", error);
+          showToast("Error processing next order");
         }
+      }
 
-        // Utility Functions
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+      // Initialization
+      window.onload = function () {
+        fetchCustomers();
+        fetchOrders();
+        fetchOrderStats();
+        fetchOrderQueue();
+      };
+
+      // Utility Functions
+      function showToast(message) {
+        const toast = document.createElement("div");
+        toast.className = "toast";
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+      }
+
+      async function fetchOrderStats() {
+        try {
+          const response = await fetch("/get_orders_overview");
+
+          if (!response.ok) throw new Error("Failed to fetch stats");
+          const data = await response.json();
+          if (!data || !data.totalOrders)
+            throw new Error("Invalid data format");
+          renderChart(data);
+        } catch (error) {
+          console.error("Error fetching order stats:", error);
+          document.getElementById("chartError").style.display = "block";
+          renderChart({
+            totalOrders: 1,
+            completedOrders: 0,
+          });
         }
+      }
 
-        async function fetchOrderStats() {
-            try {
-                const response = await fetch('/get_orders_overview');
-
-                if (!response.ok) throw new Error('Failed to fetch stats');
-                const data = await response.json();
-                if (!data || !data.totalOrders) throw new Error('Invalid data format');
-                renderChart(data);
-            } catch (error) {
-                console.error('Error fetching order stats:', error);
-                document.getElementById('chartError').style.display = 'block';
-                renderChart({
-                    totalOrders: 1,
-                    completedOrders: 0
-                });
-            }
+      function renderChart(stats) {
+        const ctx = document.getElementById("ordersChart").getContext("2d");
+        if (window.ordersChartInstance) {
+          window.ordersChartInstance.destroy();
         }
-
-        function renderChart(stats) {
-            const ctx = document.getElementById('ordersChart').getContext('2d');
-            if (window.ordersChartInstance) {
-                window.ordersChartInstance.destroy();
-            }
-            window.ordersChartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Received', 'Completed'],
-                    datasets: [{
-                        label: 'Orders',
-                        data: [stats.totalOrders, stats.completedOrders],
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)'
-                        ],
-                        borderColor: [
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(54, 162, 235, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Orders Overview'
-                        }
-                    }
-                }
-            });
-        }
+        window.ordersChartInstance = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: ["Received", "Completed"],
+            datasets: [
+              {
+                label: "Orders",
+                data: [stats.totalOrders, stats.completedOrders],
+                backgroundColor: [
+                  "rgba(255, 99, 132, 0.2)",
+                  "rgba(54, 162, 235, 0.2)",
+                ],
+                borderColor: ["rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)"],
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              title: {
+                display: true,
+                text: "Orders Overview",
+              },
+            },
+          },
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

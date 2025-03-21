@@ -1,4 +1,6 @@
 from pymongo import MongoClient
+# IMPORT ObjectID type from pymongo
+from bson.objectid import ObjectId
 import os
 from flask import Flask, request, jsonify, send_file, session, send_from_directory, render_template
 import win32evtlog
@@ -6,6 +8,7 @@ import win32evtlogutil
 import win32con
 import json
 import time
+import requests
 
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
@@ -92,9 +95,15 @@ def submit_order():
             payment_status = "paid"
 
         # ✅ Prepare order details
+        files = request.files.getlist("files[]")
+        uploaded_files = []
+        for file in files:
+            if file.filename:
+                uploaded_files.append(upload_file(file))
+
         order_details = {
             "email": email,
-            "files": request.form.getlist("files[]"),
+            "files": uploaded_files,
             "printType": request.form.getlist("printType[]"),
             "copies": request.form.getlist("copies[]"),
             "style": request.form.getlist("style[]"),
@@ -262,6 +271,26 @@ def user_orders():
 
     return jsonify({"orders": orders}), 200
 
+@app.route("/get_order_by_id", methods=["GET"])
+def get_order_by_id():
+    try:
+        order_id = request.args.get("order_id")
+        order = db.orders.find_one({"_id": ObjectId(order_id)}
+                                   )
+        order["_id"] = str(order["_id"])
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+
+        return jsonify({"order": order}), 200
+    except:
+        return jsonify({"order": "nah"}), 200
+    
+@app.route("/fileproxy", methods=["GET"])
+def fiproxy():
+    url = request.args.get("url")
+    resp = requests.get(url)
+    return send_file(io.BytesIO(resp.content), mimetype="application/pdf")
+
 @app.route("/submit_feedback", methods=["POST"])
 def submit_feedback():
     data = request.json
@@ -282,6 +311,19 @@ def submit_feedback():
     db.feedback.insert_one(feedback_entry)
     return jsonify({"message": "Feedback submitted successfully"}), 200
 
+@app.route("/mark_as_completed", methods=["POST"])
+def mark_as_completed():
+    data = request.json
+    order_id = data.get("order_id")
+
+    if not order_id:
+        return jsonify({"error": "Missing order_id"}), 400
+
+    try:
+        db.orders.update_one({"_id": ObjectId(order_id)}, {"$set": {"status": "completed"}})
+        return jsonify({"message": "Order marked as completed"}), 200
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 @app.route("/get_all_orders", methods=["GET"])
 def get_all_orders():
@@ -543,30 +585,28 @@ def get_order_queue():
 
 @app.route("/process_next_order", methods=["POST"])
 def process_next_order():
+    orderId = request.json.get("orderId")
+    orderId = orderId.split("-")[1]
+
     try:
-        next_order = db.orders.find_one_and_update(
-            {"status": "queued"},
-            {"$set": {"status": "processing"}},
-            sort=[("queue_position", 1)],
-            return_document=True
-        )
-        if next_order:
-            # Send processing notification
-            notification = {
-                "email": next_order["email"],
-                "order_id": str(next_order["_id"]),
-                "type": "order_processing",
-                "message": "Your order is now being processed",
-                "timestamp": datetime.now().isoformat(),
-                "status": "unread"
-            }
-            db.notifications.insert_one(notification)
-            
-            return jsonify({
-                "message": "Processing next order", 
-                "order_id": str(next_order["_id"])
-            }), 200
-        return jsonify({"message": "No orders in queue"}), 404
+        email = db.orders.find_one({"_id": ObjectId(orderId)})["email"]
+        orders = db.orders.update_many({"email": email, "status": "queued"}, {"$set": {"status": "processing"}})
+
+        if orders.modified_count > 0:
+            for order in db.orders.find({"email": email, "status": "processing"}):
+                notification = {
+                    "email": email,
+                    "order_id": str(order["_id"]),
+                    "type": "order_processing",
+                    "message": "Your order is now being processed",
+                    "timestamp": datetime.now().isoformat(),
+                    "status": "unread"
+                }
+                db.notifications.insert_one(notification)
+
+            return jsonify({"message": "Processing next order", "order_id": orderId}), 200
+        else:
+            return jsonify({"message": "No orders in queue"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
