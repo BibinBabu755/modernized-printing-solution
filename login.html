@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Form</title>
     <style>
+        /* Existing CSS styles */
         body {
             background: url('pixelcut-export-Photoroom_upscaled.png') no-repeat center center fixed;
             background-size: cover;
@@ -18,14 +19,12 @@
             min-height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
-
         }
 
         .container {
             width: 100%;
             max-width: 400px;
             padding: 20px;
-
         }
 
         /* animation */
@@ -77,7 +76,6 @@
             box-sizing: border-box;
         }
 
-
         .options {
             display: flex;
             justify-content: space-between;
@@ -85,7 +83,6 @@
             margin-bottom: 20px;
             font-size: 14px;
         }
-
 
         .forgot-password {
             color: #000000;
@@ -133,7 +130,7 @@
     <div class="container">
         <div class="login-box">
             <h2>Login</h2>
-            <form>
+            <form id="login-form">
                 <div class="input-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" placeholder="Enter your email">
@@ -143,53 +140,110 @@
                     <input type="password" id="password" placeholder="Enter your password">
                 </div>
                 <div class="options">
-                    <a href="" class="forgot-password">Forgot password?</a>
+                    <a href="#" id="forgot-password-link">Forgot password?</a>
                 </div>
                 <button type="submit" class="sign-in-button">Sign In</button>
             </form>
             <div class="signup-link">
                 Don't have an account? <a href="signup">Sign up</a>
             </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgot-password-form" style="display: none;">
+                <h2>Forgot Password</h2>
+                <form id="forgot-password-form-inner">
+                    <div class="input-group">
+                        <label for="forgot-email">Email Address</label>
+                        <input type="email" id="forgot-email" placeholder="Enter your email" required>
+                    </div>
+                    <button type="submit" class="sign-in-button">Send Password Reset Email</button>
+                </form>
+            </div>
         </div>
     </div>
-    <script>
-        const form = document.querySelector('form');
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.querySelector('#email').value;
-            const password = document.querySelector('#password').value;
 
-            if (email === '' || password === '') {
-                alert('Please fill in all fields');
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUYR-bTjZFUbCBKUIJX_RFwnockOymYYk",
+            authDomain: "modernized-printing-solution.firebaseapp.com",
+            projectId: "modernized-printing-solution",
+            storageBucket: "modernized-printing-solution.firebasestorage.app",
+            messagingSenderId: "551681124613",
+            appId: "1:551681124613:web:9903b847a0f50159652f6c",
+            measurementId: "G-KVML75H9K4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+
+        //  Function to Send Password Reset Email
+        async function sendResetEmail(email) {
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("If this email is linked to an account, you will receive a password reset email shortly.");
+            } catch (error) {
+                console.error(" Error sending reset email:", error);
+                alert("Something Went Wrong");
+            }
+        }
+
+        // Handle Forgot Password Form Submission
+        document.getElementById('forgot-password-form-inner').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value.trim();
+
+            await sendResetEmail(email);
+        });
+
+        //  Event Listener for Forgot Password
+        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('forgot-password-form').style.display = 'block';
+        });
+
+        // Handle Forgot Password Form Submission
+        document.getElementById('forgot-password-form-inner').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            await sendResetEmail(email);
+        });
+
+        //  Handle Login Form Submission
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                alert(" Please fill in all fields.");
                 return;
             }
 
             fetch('/api/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email,
-                    password
-                })
-            }
-            ).then(res => res.json())
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            })
+                .then(res => res.json())
                 .then(data => {
                     if (data.error) {
-                        alert(data.error);
+                        alert(" " + data.error);
                     } else {
-                        alert(data.message);
-                        window.localStorage.setItem('email', email);
-                        if (data.redirect) {
-                            window.location.href = data.redirect;
-                        } else {
-                            window.location.href = '/dashboard';
-                        }
+                        alert(" " + data.message);
+                        localStorage.setItem('email', email);
+                        window.location.href = data.redirect ? data.redirect : '/dashboard';
                     }
-
-                });
+                })
+                .catch(error => console.error(" Login Error:", error));
         });
+
     </script>
 </body>
 
