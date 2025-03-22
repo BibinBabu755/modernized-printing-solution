@@ -15,6 +15,9 @@ from datetime import datetime
 import PyPDF2
 import io
 import razorpay
+import firebase_admin
+from firebase_admin import credentials, auth
+import requests
 
 
 DB_USER = quote_plus(os.getenv("DB_USER", "user"))
@@ -36,6 +39,10 @@ RAZORPAY_KEY_ID = "rzp_test_uWQB1jUeTRrqGS"
 RAZORPAY_KEY_SECRET = "9AiZepOIynKtEPTlAqEf0JbK"
 
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+cred = credentials.Certificate(r"C:\Users\Ashish\Desktop\Mini project\modernized-printing-solution\Confidential\modernized-printing-solution-firebase-adminsdk-fbsvc-31596e3d1a.json")
+firebase_admin.initialize_app(cred)
+FIREBASE_API_KEY = "AIzaSyCUYR-bTjZFUbCBKUIJX_RFwnockOymYYk"
 
 # Event IDs for print jobs
 PRINT_JOB_STARTED = 307
@@ -339,38 +346,97 @@ def upload_file(file):
 def signup():
     try:
         data = request.json
-        if not data or not all(key in data for key in ("email", "password", "firstName", "lastName")):
+        if not data or not all(key in data for key in ("uid", "firstName", "lastName", "email", "phone", "password")):
             return jsonify({"error": "Invalid input"}), 400
-
+        
         if users.find_one({"email": data["email"]}):
             return jsonify({"error": "User already exists"}), 409
 
+        # Hash the password (optional, since Firebase already hashes it)
         hashed_password = generate_password_hash(data["password"])
-        users.insert_one({**data, "password": hashed_password})
-        return jsonify({"message": "User created successfully"}), 201
+
+        # Prepare user data
+        user_data = {
+            "uid": data["uid"],
+            "firstName": data["firstName"],
+            "lastName": data["lastName"],
+            "email": data["email"],
+            "phone": data["phone"],
+            "password": hashed_password,  # Optional: Store hashed password
+            "verified": False  # You can set this to True after email verification
+        }
+
+        # Insert user data into MongoDB
+        users.insert_one(user_data)
+
+        return jsonify({"message": "User data stored successfully"}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+from firebase_admin import auth
 
 @app.route("/api/login", methods=["POST"])
 def login():
     try:
         data = request.json
-        if not data or not all(key in data for key in ("email", "password")):
+        email = data.get("email")
+        password = data.get("password")
+
+        if not email or not password:
+            print("❌ Error: Email or password missing")
             return jsonify({"error": "Invalid input"}), 400
 
-        if data["email"] == "admin@admin" and data["password"] == "admin":
-            session['user'] = {'email': 'admin@admin', 'role': 'admin'}
-            return jsonify({"message": "Admin login successful", "redirect": "/admin"}), 200
+        print(f"🔍 Attempting login for email: {email}")
 
-        user = users.find_one({"email": data["email"]})
-        if not user or not check_password_hash(user["password"], data["password"]):
+        # ✅ Use Firebase API to verify email & password
+        firebase_auth_url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+
+        firebase_response = requests.post(firebase_auth_url, json=payload)
+        firebase_data = firebase_response.json()
+
+        if "error" in firebase_data:
+            print("❌ Firebase authentication failed:", firebase_data)
             return jsonify({"error": "Invalid credentials"}), 401
 
-        user.pop("password")
-        user["_id"] = str(user["_id"])
-        session["user"] = {"email": user["email"], "role": "user"}
+        # ✅ Successfully authenticated
+        print(f"✅ Firebase authentication successful for {email}")
 
-        return jsonify({"message": "Login successful", "user": user}), 200
+        # ✅ Fetch Firebase user info
+        firebase_user = auth.get_user_by_email(email)
+        print("✅ Firebase user found:", firebase_user.email)
+
+        # ✅ Set session and return success
+        session["user"] = {"email": email, "role": "user"}
+        return jsonify({"message": "Login successful", "redirect": "/dashboard"}), 200
+
+    except Exception as e:
+        print("🔥 INTERNAL SERVER ERROR:", str(e))
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+
+    
+@app.route("/api/forgot-password", methods=["POST"])
+def forgot_password():
+    try:
+        data = request.json
+        email = data.get("email")
+
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+
+        # Generate password reset link
+        reset_link = auth.generate_password_reset_link(email)
+
+        # When a user resets their password, update MongoDB with a placeholder password
+        users.update_one({"email": email}, {"$set": {"password": "firebase_reset"}})
+
+        return jsonify({"message": "Password reset email sent. Please check your inbox.", "reset_link": reset_link}), 200
+    except auth.UserNotFoundError:
+        return jsonify({"error": "User not found"}), 404
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
@@ -378,7 +444,7 @@ def login():
 def login_page():
     try:
         file_path = os.path.join(os.path.dirname(__file__), "login.html")
-        return open(file_path).read(), 200
+        return open(file_path, encoding="utf-8").read(), 200
     except FileNotFoundError:
         return jsonify({"error": "Login page not found"}), 404
 
@@ -623,6 +689,9 @@ def get_pdf_page_count():
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
+
+
 
 if __name__ == "__main__":  
     app.run(port=5000, debug=True)
