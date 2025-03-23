@@ -18,6 +18,8 @@ import razorpay
 import firebase_admin
 from firebase_admin import credentials, auth
 import requests
+from firebase_admin import auth
+
 
 
 DB_USER = quote_plus(os.getenv("DB_USER", "user"))
@@ -40,7 +42,7 @@ RAZORPAY_KEY_SECRET = "9AiZepOIynKtEPTlAqEf0JbK"
 
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
-cred = credentials.Certificate(r"C:\Users\Ashish\Desktop\Mini project\modernized-printing-solution\Confidential\modernized-printing-solution-firebase-adminsdk-fbsvc-31596e3d1a.json")
+cred = credentials.Certificate(r"C:\Users\Ashish\Desktop\Mini project\Confidential\modernized-printing-solution-firebase-adminsdk-fbsvc-31596e3d1a.json")
 firebase_admin.initialize_app(cred)
 FIREBASE_API_KEY = "AIzaSyCUYR-bTjZFUbCBKUIJX_RFwnockOymYYk"
 
@@ -90,8 +92,7 @@ def submit_order():
         if not email:
             return jsonify({"error": "Email is required"}), 400
 
-        # ✅ Determine payment status
-        #payment_status = "paid" if payment_id else "unpaid"
+        
 
         if payment_id=="null":
             payment_status = "unpaid"
@@ -372,7 +373,7 @@ def signup():
         return jsonify({"message": "User data stored successfully"}), 200
     except Exception as e:
         return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
-from firebase_admin import auth
+
 
 @app.route("/api/login", methods=["POST"])
 def login():
@@ -382,10 +383,10 @@ def login():
         password = data.get("password")
 
         if not email or not password:
-            print("❌ Error: Email or password missing")
+           
             return jsonify({"error": "Invalid input"}), 400
 
-        print(f"🔍 Attempting login for email: {email}")
+        
         if data["email"] == "admin@admin" and data["password"] == "admin":
              session['user'] = {'email': 'admin@admin', 'role': 'admin'}
              return jsonify({"message": "Admin login successful", "redirect": "/admin"}), 200
