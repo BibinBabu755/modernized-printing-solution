@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <style>
+        body {
+            background: url('pixelcut-export-Photoroom_upscaled.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #000000;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .container {
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        .signup-box {
+            padding: 30px;
+            border-radius: 30px;
+            background-color: rgba(255, 255, 255, 0.697);
+            box-shadow: 0 0 10px rgba(155, 155, 155, 0.603);
+        }
+
+        a h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #000000;
+        }
+
+        .name-fields {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #000000;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ffffff;
+            border-radius: 30px;
+            background-color: #fcf7f7;
+            color: #0f0e0e;
+            box-sizing: border-box;
+        }
+
+        .create-account-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0011ff;
+            color: rgb(255, 255, 255);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .create-account-button:hover {
+            background-color: #008e9d;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="signup-box">
+            <h2>Create Account</h2>
+            <form id="signup-form">
+                <div class="name-fields">
+                    <div class="input-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" placeholder="First name" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" placeholder="Last name" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="Designation">Choose your Designation:</label>
+                    <select name="Designation" id="Designation" required>
+                        <option value="" disabled selected>Designation</option>
+                        <option value="Faculty">Faculty</option>
+                        <option value="Student">Student</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Create Password</label>
+                    <input type="password" id="password" placeholder="Create a password" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="create-account-button">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUYR-bTjZFUbCBKUIJX_RFwnockOymYYk",
+            authDomain: "modernized-printing-solution.firebaseapp.com",
+            projectId: "modernized-printing-solution",
+            storageBucket: "modernized-printing-solution.firebasestorage.app",
+            messagingSenderId: "551681124613",
+            appId: "1:551681124613:web:9903b847a0f50159652f6c",
+            measurementId: "G-KVML75H9K4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const form = document.getElementById('signup-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+
+            // Validate required fields
+            if (!email || !firstName || !lastName || !password || !phone) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Create user with Firebase
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Send email verification
+                    sendEmailVerification(userCredential.user)
+                        .then(() => {
+                            alert('Verification email sent. Please check your inbox.');
+
+                        });
+
+                    // Send additional user data to your backend
+                    fetch('/api/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            uid: userCredential.user.uid,
+                            firstName,
+                            lastName,
+                            email,
+                            phone,
+                            password,
+                        })
+                    }).then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                alert(data.error);
+                            } else {
+                                
+                                window.location.href = '/login'; // Redirect to login page
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error storing user data:', error);
+                        });
+                })
+                .catch((error) => {
+                    // Handle Firebase errors
+                    alert(error.message);
+                });
+        });
+    </script>
+</body>
+
+</html>

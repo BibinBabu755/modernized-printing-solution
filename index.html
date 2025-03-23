@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern Printing Service</title>
+    <style>
+      * {
+        margin: 10px;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      /*background image and style */
+      body {
+        font-family: Arial, sans-serif;
+        background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat
+          center center fixed;
+        background-size: cover;
+        color: #333;
+        overflow-y: hidden;
+        overflow-x: hidden;
+      }
+
+      /* align*/
+      .container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 70%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 60vh;
+        text-align: center;
+        background-color: rgba(255, 255, 255, 0.697);
+        box-shadow: 0 0 10px rgba(155, 155, 155, 0.603);
+        padding: 2rem;
+        border-radius: 100px;
+      }
+      h1 {
+        width: 25ch;
+        animation: typing 3s steps(22), blink 0.8s step-end infinite alternate;
+        white-space: nowrap;
+        overflow: hidden;
+        border-right: 3px solid;
+        font-family:'Cabin Sketch';
+        font-size: 50px; 
+        font-style: normal; 
+        font-variant: normal; 
+        font-weight: 700; 
+        line-height: 80px;
+        color: rgba(0, 0, 0, 0.77);
+      }
+      p {
+        font-family: monospace;
+        font-size: 1.4em;
+        color: rgba(0, 0, 0, 0.83);
+        font-weight: bold;
+      }
+      /* Style the navigation menu */
+      /*nav {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.71);
+    margin-bottom: 2rem;
+}*/
+
+      /*nav a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    margin: 0 1rem;
+    transition: color 0.3s;
+}*/
+
+      /* Style the buttons */
+      button {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+        font-weight: bold;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 1rem;
+        transition: background-color 0.3s, transform 0.3s;
+      }
+      .container a {
+        text-decoration: none;
+        color: white;
+      }
+      button a:hover {
+        color: rgb(255, 255, 255);
+        text-decoration: none;
+      }
+      button:hover {
+        background-color: rgb(39, 181, 237);
+        transform: scale(1.05);
+        text-decoration: none;
+      }
+
+      /* animation */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .container {
+        animation: fadeIn 3s ease-in-out;
+      }
+      .wrapper {
+        height: 100vh;
+        /*This part is important for centering*/
+        display: grid;
+        place-items: center;
+      }
+
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+      }
+
+      @keyframes blink {
+        80% {
+          border-color: transparent;
+        }
+      }
+    </style>
+  </head>
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Cabin+Sketch" />
+  <body>
+    <div class="container">
+      <h1>Welcome to Modern Printing Service..</h1>
+      <p>Reliable printing services, tailored to your needs.</p>
+      <button>
+        <a href="login">GetStarted</a>
+      </button>
+    </div>
+    <script>
+      // Add an event listener to the "Get Started" button
+      document
+        .getElementById("getStartedButton")
+        .addEventListener("click", function () {
+          alert("Thank you for choosing us!");
+        });
+    </script>
+  </body>
+</html>

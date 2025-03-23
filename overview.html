@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview - Customer Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            background-color: #f4f4f9;
+        }
+
+        .dashboard-link {
+            text-decoration: none;
+            /* Removes underline */
+        }
+
+        .dashboard-heading {
+            text-align: center;
+            color: white;
+        }
+
+        .sidebar {
+            width: 150px;
+            background-color: #00a6ff6d;
+            height: 100vh;
+            color: white;
+            position: fixed;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            font-size: 17px;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #008e9d;
+        }
+
+        button:hover {
+            background-color: #008e9d;
+        }
+
+        .content {
+            margin-left: 270px;
+            padding: 20px;
+        }
+
+        .content h1 {
+            color: #ffffff;
+            background-color: #00a6ff6d;
+            border-radius: 30px;
+            text-align: center;
+        }
+
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+        }
+
+        .card p {
+            color: #666;
+        }
+
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .content {
+            animation: fadeIn .5s ease-in-out;
+        }
+
+        .btn {
+            background-color: #00a6ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+            font-size: 17px;
+            width: 100%;
+            text-align: left;
+        }
+    </style>
+    <script>
+        // Sample Orders Data
+        const orders = [
+            { id: "ORD-2024-001", status: "In Progress", size: "A4", pages: 25, type: "Color", progress: 2 },
+            { id: "ORD-2024-000", status: "Completed", size: "A3", pages: 10, type: "B&W", progress: 4 }
+        ];
+
+        window.ordersData = []; // Ensure it's globally declared
+
+        async function loadOverview() {
+            try {
+                const response = await fetch("/get_orders_overview");
+                const data = await response.json();
+
+                console.log("Fetched Orders:", data.orders); // Debugging
+
+                if (response.ok && data.orders) {
+                    window.ordersData = data.orders; // ✅ Store globally
+
+                    let orderList = "";
+                    data.orders.forEach(order => {
+                        orderList += `
+                <div class="bg-gray-50 p-4 rounded cursor-pointer hover:bg-gray-100" 
+                    onclick="showTracking('${order._id}')">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-medium">${order._id}</span>
+                        <span class="px-3 py-1 rounded-full text-sm 
+                            ${["Completed", "Processing"].includes(order.status) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">
+                            ${order.status}
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 text-sm">
+                        <div>Print Size: ${order.paperSize}</div>
+                        <div>Style: ${order.style}</div>
+                        <div>Type: ${order.printType}</div>
+                    </div>
+                </div>
+                `;
+                    });
+
+                    document.getElementById("orderSummary").innerHTML = orderList;
+                } else {
+                    console.error("Failed to load orders:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        }
+
+
+        function showTracking(orderId) {
+
+
+            const order = window.ordersData.find(o => o._id === orderId);
+
+            let trackingSteps = ["Queued", "Processing", "Printing", "Completed"];
+            let progress = trackingSteps.map(s => s.toLowerCase()).indexOf(order.status.toLowerCase());
+
+            document.getElementById("popupTitle").innerText = `Tracking Order: ${orderId}`;
+            document.getElementById("progressBar").style.width = `${(progress / (trackingSteps.length - 1)) * 100}%`;
+
+            let trackingHTML = trackingSteps.map((step, index) => `
+        <div class="flex flex-col items-center">
+            <div class="w-8 h-8 flex items-center justify-center rounded-full 
+                ${index <= progress ? "bg-green-500 text-white" : "bg-gray-300 text-gray-700"}">
+                ${index <= progress ? '<i class="fas fa-check"></i>' : index + 1}
+            </div>
+            <span class="text-sm mt-2">${step}</span>
+        </div>
+    `).join("");
+
+            document.getElementById("orderTracking").innerHTML = trackingHTML;
+            document.getElementById("trackingModal").classList.remove("hidden");
+
+
+        }
+
+
+
+        function closeTracking() {
+            document.getElementById("trackingModal").classList.add("hidden");
+        }
+
+        async function loadPayments() {
+            try {
+                const userEmail = localStorage.getItem("email");  // Assuming email is stored in localStorage
+                const response = await fetch(`/get_payment_overview?email=${userEmail}`);
+                const data = await response.json();
+
+
+
+                if (response.ok && data.payments) {
+                    let paymentList = "";
+                    data.payments.forEach(payment => {
+                        paymentList += `
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <div>
+                            <span class="font-medium">${payment._id}</span>
+                            <span class="text-sm text-gray-600 ml-2">${payment.date}</span>
+                        </div>
+                        <span class="text-green-600 font-medium">₹${payment.total_cost.toFixed(2)}</span>
+                    </div>
+                `;
+                    });
+
+                    document.getElementById("paymentSummary").innerHTML = paymentList;
+                } else {
+                    document.getElementById("paymentSummary").innerHTML = "<p class='text-gray-500'>No payments found.</p>";
+                    console.error("Failed to load payments:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching payments:", error);
+            }
+        }
+
+        window.onload = function () {
+            loadOverview();
+            loadPayments();
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            loadOrdersForFeedback();
+        });
+
+
+
+        async function loadOrdersForFeedback() {
+            try {
+                const response = await fetch("/get_orders_overview");
+                const data = await response.json();
+
+                if (response.ok && data.orders) {
+                    let orderDropdown = document.getElementById("order");
+                    orderDropdown.innerHTML = ""; // Clear existing options
+
+                    data.orders.forEach(order => {
+                        let option = document.createElement("option");
+                        option.value = order._id;
+                        option.textContent = `${order._id}`;
+                        orderDropdown.appendChild(option);
+                    });
+                } else {
+                    console.error("Failed to load orders:", data.error);
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        }
+
+        async function submitFeedback() {
+            const orderId = document.getElementById("order").value;
+            const feedbackText = document.getElementById("feedback").value.trim();
+
+            if (!orderId || feedbackText === "") {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            const feedbackData = {
+                order_id: orderId,
+                feedback: feedbackText
+            };
+
+            console.log("Submitting feedback:", feedbackData); // Debugging
+
+            try {
+                const response = await fetch("/submit_feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(feedbackData),
+                });
+
+                const result = await response.json();
+                console.log("Server response:", result); // Debugging
+
+                if (response.ok) {
+                    alert("Feedback submitted successfully!");
+                    document.getElementById("feedback").value = "";
+                } else {
+                    alert("Failed to submit feedback: " + result.error);
+                }
+            } catch (error) {
+                console.error("Error submitting feedback:", error);
+            }
+        }
+
+
+
+    </script>
+</head>
+
+<body class="bg-gray-100">
+    <div class="sidebar">
+        <a href="dashboard" class="dashboard-link">
+            <h2 class="dashboard-heading">Dashboard</h2>
+        </a>
+
+        <ul>
+            <li><a href="overview">Overview</a></li>
+            <li><a href="orders">Orders</a></li>
+            <li><a href="notifications">Notifications</a></li>
+            <li><a href="profile">Profile</a></li>
+            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div class="container mx-auto px-4 py-8">
+
+            <!-- Order Summary Section -->
+            <section class="mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Order Summary</h2>
+                    <div id="orderSummary" class="space-y-4"></div>
+                </div>
+            </section>
+
+            <!-- Order Tracking Popup -->
+            <!-- Order Tracking Popup -->
+            <div id="trackingModal"
+                class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md w-96">
+                    <h2 id="popupTitle" class="text-xl font-bold mb-4"></h2>
+
+                    <!-- Progress Bar -->
+                    <div class="relative flex items-center justify-between space-x-4 mb-4" id="orderTracking"></div>
+                    <div class="w-full h-1 bg-gray-200 mt-4">
+                        <div id="progressBar" class="h-full bg-green-500 w-0"></div>
+                    </div>
+
+                    <!-- Close Button -->
+                    <div class="mt-4 flex justify-end">
+                        <button onclick="closeTracking()"
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Payment Overview Section -->
+            <section class="mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Payment Overview</h2>
+                    <div id="paymentSummary" class="space-y-2">
+                        <!-- Payments will be dynamically inserted here -->
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- Feedback Section -->
+            <section>
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Leave Feedback</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="order" class="block text-sm font-medium text-gray-700 mb-1">Select Order</label>
+                            <select id="order"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </select>
+                        </div>
+
+                    </div>
+                    <div>
+                        <label for="feedback" class="block text-sm font-medium text-gray-700 mb-1">Your
+                            Feedback</label>
+                        <textarea id="feedback" rows="4"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Share your this order experience with us..."></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button onclick="submitFeedback()"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            <i class="fas fa-paper-plane mr-2"></i> Submit Feedback
+                        </button>
+                    </div>
+                </div>
+        </div>
+        </section>
+
+    </div>
+    </div>
+</body>
+
+</html>

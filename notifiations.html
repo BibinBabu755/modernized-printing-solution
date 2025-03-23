@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url("pixelcut-export-Photoroom_upscaled.png") no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 150px;
+            background-color: #00a6ff6d;
+            height: 100vh;
+            color: white;
+            position: fixed;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            margin: 20px 0;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+            font-size:17px;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #008e9d;
+        }
+
+        .notification-count {
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+
+        .dashboard {
+            width: 60%;
+            margin: 50px auto;
+            margin-left: 250px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .dashboard-link {
+            text-decoration: none; /* Removes underline */
+        }
+
+        .dashboard-heading {
+            text-align: center;
+            color: white;
+        }
+
+        .notification-tab {
+            margin-top: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+
+        .notification-tab h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+            color: #007bff;
+        }
+
+        .notification-tab ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .notification-tab li {
+            padding: 10px;
+            font-size: 16px;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
+        }
+
+        .submitted { color: #007BFF; }
+        .processing { color: #FFC107; }
+        .completed { color: #28A745; }
+        .unread { font-weight: bold; background-color: #f0f8ff; }
+        .read { font-weight: normal; background-color: #ffffff; }
+
+        #clearNotifications {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #clearNotifications:hover {
+            background: #cc0000;
+        }
+        .btn {
+            background-color: #00a6ff;
+            color: white;
+            /*padding: 10px 20px;*/
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            padding: 10px;
+            border-radius: 8px;
+            display: block;
+            font-size: 17px;
+            width: 100%; 
+            text-align: left;
+        }
+
+        .btn:hover {
+            background-color: #008e9d;
+        }
+
+        /* animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .dashboard {
+            animation: fadeIn .5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <a href="dashboard" class="dashboard-link">
+            <h2 class="dashboard-heading">Dashboard</h2>
+        </a>
+        <ul>
+            <li><a href="overview">Overview</a></li>
+            <li><a href="orders">Orders</a></li>
+            <li><a href="notifications" >Notifications</a></li>
+            <li><a href="profile">Profile</a></li>
+            <li><button class="btn" onclick="localStorage.clear(); window.location.href = '/login';">Logout</button></li>
+        </ul>
+    </div>
+
+    <div class="dashboard">
+        <h2>Notifications</h2>
+
+        <div class="notification-tab">
+            <ul id="permanentNotificationList"></ul>
+            <button id="clearNotifications" onclick="clearAllNotifications()">Clear All</button>
+        </div>
+
+        <div class="notification-count" id="notificationCount">0</div>
+    </div>
+
+    <script>
+        
+        let unreadCount = 0;
+
+        function getFormattedDateTime(timestamp) {
+            const date = new Date(timestamp);
+            // get ist tz time
+            date.setHours(date.getHours() - 5);
+            date.setMinutes(date.getMinutes() - 30);
+            return date.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+        }
+
+        function addNotification(type, timestamp) {
+            const permanentNotificationList = document.getElementById("permanentNotificationList");
+            const li = document.createElement("li");
+            const ts = getFormattedDateTime(timestamp)
+            let message = "";
+
+            if (type === "queued") {
+                message = "Your order has been submitted - " + ts;
+                li.classList.add("submitted");
+            } else if (type === "processing") {
+                message = "Your order is processing - " + ts;
+                li.classList.add("processing");
+            } else if (type === "completed") {
+                message = "Your order is completed! - " + ts;
+                li.classList.add("completed");
+            }
+
+            li.classList.add("unread");
+            li.textContent = message;
+            permanentNotificationList.prepend(li);
+            updateUnreadCount(1);
+        }
+
+        function updateUnreadCount(change) {
+            unreadCount += change;
+            document.getElementById("notificationCount").textContent = unreadCount;
+        }
+
+        function markAllAsRead() {
+            document.querySelectorAll(".unread").forEach(notification => {
+                notification.classList.remove("unread");
+                notification.classList.add("read");
+            });
+            unreadCount = 0;
+            document.getElementById("notificationCount").textContent = unreadCount;
+        }
+
+        function clearAllNotifications() {
+            document.getElementById("permanentNotificationList").innerHTML = "";
+            unreadCount = 0;
+            document.getElementById("notificationCount").textContent = unreadCount;
+        }
+
+        function initPage() {
+            fetch("get_orders?email=" + localStorage.getItem("email"))
+                .then(response => response.json())
+                .then(data => {
+                    data.orders.forEach(notification => {
+                        addNotification(notification.status, notification.timestamp);
+                    });
+                })
+                .catch(error => {
+                    console.error("Error fetching notifications:", error);
+                });
+        }
+
+        
+        initPage();
+
+        if (!localStorage.getItem("email")) {
+            window.location.href = "/login";
+        }
+    </script>
+</body>
+</html>
