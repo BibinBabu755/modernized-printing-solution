@@ -356,6 +356,9 @@ def get_customers():
             if user and user not in customers:
                 user["_id"] = str(user["_id"])
                 user["last_order"] = order["timestamp"]
+                user["firstName"] = user.get("firstName", "Unknown")
+                user["lastName"] = user.get("lastName", "Customer")
+                user["email"] = user.get("email", "N/A")
                 customers.append(user)
         return jsonify({"customers": customers}), 200
     except Exception as e:

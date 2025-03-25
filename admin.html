@@ -354,49 +354,54 @@
       // Customer Management Functions
       async function fetchCustomers() {
         try {
-          const response = await fetch("/get_customers");
-          const data = await response.json();
-          displayCustomers(data.customers);
+            const response = await fetch("/get_customers");
+            const data = await response.json();
+    
+            if (response.ok && data.customers && data.customers.length > 0) {
+                // Sort customers based on the earliest last order timestamp (FCFS)
+                data.customers.sort((a, b) => new Date(a.last_order) - new Date(b.last_order));
+                displayCustomers(data.customers);
+            } else {
+                console.error("Failed to fetch customers or no customers available:", data.error || "No data");
+                document.getElementById("customer-cards").innerHTML = "<p class='text-gray-500'>No customers found.</p>";
+            }
         } catch (error) {
-          console.error("Error fetching customers:", error);
-          showToast("Error fetching customers");
+            console.error("Error fetching customers:", error);
+            document.getElementById("customer-cards").innerHTML = "<p class='text-red-500'>Error loading customers. Please try again later.</p>";
         }
-      }
+    }
 
-      function displayCustomers(customers) {
-        const container = document.getElementById("customer-cards");
-        container.innerHTML = "";
+    function displayCustomers(customers) {
+    const container = document.getElementById("customer-cards");
+    container.innerHTML = ""; // Clear existing customer cards
 
-        customers.forEach((customer) => {
-          const card = document.createElement("div");
-          card.className = "customer-card";
+    customers.forEach((customer) => {
+        const firstName = customer.firstName || "Unknown";
+        const lastName = customer.lastName || "Customer";
+        const email = customer.email || "N/A";
+        const status = customer.status || "unknown";
+        const lastOrder = customer.last_order ? new Date(customer.last_order).toLocaleString() : "N/A";
 
-          const lastOrder = new Date(customer.last_order).toLocaleString();
-          const status = customer.status || "queued";
+        const card = document.createElement("div");
+        card.className = "customer-card";
 
-          const progressBarWidth = getProgressWidth(status);
-
-          card.innerHTML = `
+        card.innerHTML = `
             <div class="customer-card-header">
-              <div class="customer-card-name">${customer.firstName} ${customer.lastName}</div>
-              <div class="customer-card-status status-${status}">${status}</div>
+                <div class="customer-card-name">${firstName} ${lastName}</div>
+                <div class="customer-card-status status-${status}">${status}</div>
             </div>
             <div class="customer-card-details">
-              <div><strong>Email:</strong> ${customer.email}</div>
-              <div><strong>Last Order:</strong> ${lastOrder}</div>
-            </div>
-            <div class="customer-card-progress">
-              <div class="progress-bar">
-                <div class="progress-bar-fill" style="width: ${progressBarWidth}"></div>
-              </div>
+                <div><strong>Email:</strong> ${email}</div>
+                <div><strong>Phone:</strong> ${customer.phone || "N/A"}</div>
+                <div><strong>Last Order:</strong> ${lastOrder}</div>
             </div>
             <div class="customer-card-actions">
-              <button class="customer-card-action contact" onclick="contactCustomer('${customer.email}', '${customer.phone}')">Contact</button>
+                <button class="customer-card-action contact" onclick="contactCustomer('${email}', '${customer.phone || "N/A"}')">Contact</button>
             </div>
-          `;
-          container.appendChild(card);
-        });
-      }
+        `;
+        container.appendChild(card);
+    });
+}
 
       function contactCustomer(email, phone) {
     // Create modal container
