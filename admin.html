@@ -256,23 +256,6 @@
         color: #fff;
       }
 
-      .customer-card-progress {
-        margin: 15px 0;
-      }
-
-      .progress-bar {
-        height: 8px;
-        background: #eee;
-        border-radius: 4px;
-        overflow: hidden;
-      }
-
-      .progress-bar-fill {
-        height: 100%;
-        background: #2196f3;
-        transition: width 0.3s;
-      }
-
       .customer-card-actions {
         margin-top: 15px;
         display: flex;
@@ -339,11 +322,7 @@
         <h2>Manage Customers</h2>
         <div class="customer-list" id="customers-list">
           <div class="customer-header">
-            <span>Name</span>
-            <span>Last Order</span>
-            <span>Priority</span>
-            <span>Status</span>
-            <span>Actions</span>
+            <span>Customer Details</span>
           </div>
           <div class="customer-cards" id="customer-cards">
             <!-- Customer cards will be dynamically inserted here -->
@@ -395,52 +374,26 @@
           const lastOrder = new Date(customer.last_order).toLocaleString();
           const status = customer.status || "queued";
 
+          const progressBarWidth = getProgressWidth(status);
+
           card.innerHTML = `
-                    <div class="customer-card-header">
-                        <div class="customer-card-name">${customer.firstName} ${
-            customer.lastName
-          }</div>
-                        <div class="customer-card-status status-${status}">${status}</div>
-                    </div>
-                    <div class="customer-card-details">
-                        <div><strong>Email:</strong> ${customer.email}</div>
-                        <div><strong>Last Order:</strong> ${lastOrder}</div>
-                    </div>
-                    <div class="customer-card-progress">
-                        <div class="progress-bar">
-                            <div class="progress-bar-fill" style="width: ${getProgressWidth(
-                              status
-                            )}"></div>
-                        </div>
-                    </div>
-                    <div class="customer-card-actions">
-                        <button class="customer-card-action view" onclick="viewCustomerDetails('${
-                          customer.email
-                        }')">View Details</button>
-                        <button class="customer-card-action contact" onclick="contactCustomer('${
-                          customer.email
-                        }', '${customer.phone}'
-                        )">Contact</button>
-                    </div>
-                    <div class="priority-control">
-                        <label>Priority:</label>
-                        <select class="priority-select" 
-                                data-email="${customer.email}"
-                                onchange="updatePriority('${
-                                  customer.email
-                                }', this.value)">
-                            <option value="1" ${
-                              customer.priority == 1 ? "selected" : ""
-                            }>Low</option>
-                            <option value="2" ${
-                              customer.priority == 2 ? "selected" : ""
-                            }>Medium</option>
-                            <option value="3" ${
-                              customer.priority == 3 ? "selected" : ""
-                            }>High</option>
-                        </select>
-                    </div>
-                `;
+            <div class="customer-card-header">
+              <div class="customer-card-name">${customer.firstName} ${customer.lastName}</div>
+              <div class="customer-card-status status-${status}">${status}</div>
+            </div>
+            <div class="customer-card-details">
+              <div><strong>Email:</strong> ${customer.email}</div>
+              <div><strong>Last Order:</strong> ${lastOrder}</div>
+            </div>
+            <div class="customer-card-progress">
+              <div class="progress-bar">
+                <div class="progress-bar-fill" style="width: ${progressBarWidth}"></div>
+              </div>
+            </div>
+            <div class="customer-card-actions">
+              <button class="customer-card-action contact" onclick="contactCustomer('${customer.email}', '${customer.phone}')">Contact</button>
+            </div>
+          `;
           container.appendChild(card);
         });
       }
@@ -497,9 +450,9 @@
       function getProgressWidth(status) {
         switch (status) {
           case "queued":
-            return "33%";
+            return "30%";
           case "processing":
-            return "66%";
+            return "60%";
           case "completed":
             return "100%";
           default:
@@ -588,24 +541,48 @@
           if (order.status !== "queued" && order.status !== "completed") {
             ordersList.appendChild(orderItem);
           }
-
+          
+          const paymentStatus = order.payment_status === "paid" ? "Payment Completed" : "Pending";
           const paymentItem = document.createElement("div");
           paymentItem.className = "order-item";
           paymentItem.innerHTML = `
                     Order ID: ${order._id} - 
-                    <span class="payment-status ${
-                      order.paymentStatus || "pending"
-                    }" id="payment-status-${order._id}">${
-            order.paymentStatus || "Pending"
-          }</span> 
-                    <button class="confirm-btn" onclick="confirmPayment('${
-                      order._id
-                    }')">Confirm Payment</button>
+                    <span class="payment-status ${order.payment_status || "pending"}" id="payment-status-${order._id}">${paymentStatus}</span> 
+                    <button class="confirm-btn" onclick="confirmPayment('${order._id}')">Confirm Payment</button>
                 `;
           if (order.status == "completed") {
             paymentsList.appendChild(paymentItem);
           }
         });
+      }
+
+      async function confirmPayment(orderId) {
+        try {
+          const response = await fetch("/confirm_payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ order_id: orderId, payment_status: "paid" }),
+          });
+  
+          if (!response.ok) {
+            throw new Error("Failed to confirm payment");
+          }
+  
+          const result = await response.json();
+          if (result.message) {
+            const paymentStatusElement = document.getElementById(`payment-status-${orderId}`);
+            if (paymentStatusElement) {
+              paymentStatusElement.textContent = "Payment Completed";
+              paymentStatusElement.className = "payment-status confirmed";
+            }
+            showToast("Payment confirmed successfully");
+          }
+        } catch (error) {
+          console.error("Error confirming payment:", error);
+          showToast("Error confirming payment");
+        }
       }
 
       // Order Queue Functions
@@ -686,6 +663,19 @@
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ order_id: orderId }),
+        }).then(() => {
+          // Update the order status text
+          const statusElement = document.getElementById(`order-status-${orderId}`);
+          if (statusElement) {
+            statusElement.textContent = newStatus;
+            statusElement.className = `order-status ${newStatus.toLowerCase()}`;
+          }
+
+          // Update the progress bar
+          const progressBarFill = document.querySelector(`#order-${orderId} .progress-bar-fill`);
+          if (progressBarFill) {
+            progressBarFill.style.width = getProgressWidth(newStatus);
+          }
         });
       }
 

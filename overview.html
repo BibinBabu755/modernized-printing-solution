@@ -128,51 +128,47 @@
         }
     </style>
     <script>
-        // Sample Orders Data
-        const orders = [
-            { id: "ORD-2024-001", status: "In Progress", size: "A4", pages: 25, type: "Color", progress: 2 },
-            { id: "ORD-2024-000", status: "Completed", size: "A3", pages: 10, type: "B&W", progress: 4 }
-        ];
-
+        
         window.ordersData = []; // Ensure it's globally declared
 
         async function loadOverview() {
             try {
-                const response = await fetch("/get_orders_overview");
+                const userEmail = localStorage.getItem("email"); // Assuming email is stored in localStorage
+                const response = await fetch(`/user_orders?email=${userEmail}`);
                 const data = await response.json();
 
-                console.log("Fetched Orders:", data.orders); // Debugging
-
-                if (response.ok && data.orders) {
-                    window.ordersData = data.orders; // ✅ Store globally
+                if (response.ok && data.orders && data.orders.length > 0) {
+                    window.ordersData = data.orders; // Store globally
 
                     let orderList = "";
                     data.orders.forEach(order => {
                         orderList += `
-                <div class="bg-gray-50 p-4 rounded cursor-pointer hover:bg-gray-100" 
-                    onclick="showTracking('${order._id}')">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-medium">${order._id}</span>
-                        <span class="px-3 py-1 rounded-full text-sm 
-                            ${["Completed", "Processing"].includes(order.status) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">
-                            ${order.status}
-                        </span>
+                    <div class="bg-gray-50 p-4 rounded cursor-pointer hover:bg-gray-100" 
+                        onclick="showTracking('${order._id}')">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-medium">${order._id}</span>
+                            <span class="px-3 py-1 rounded-full text-sm 
+                                ${["completed", "processing"].includes(order.status.toLowerCase()) ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}">
+                                ${order.status}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-sm">
+                            <div>Print Size: ${order.paperSize || "N/A"}</div>
+                            <div>Style: ${order.style || "N/A"}</div>
+                            <div>Type: ${order.printType || "N/A"}</div>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-3 gap-4 text-sm">
-                        <div>Print Size: ${order.paperSize}</div>
-                        <div>Style: ${order.style}</div>
-                        <div>Type: ${order.printType}</div>
-                    </div>
-                </div>
                 `;
                     });
 
                     document.getElementById("orderSummary").innerHTML = orderList;
                 } else {
-                    console.error("Failed to load orders:", data.error);
+                    document.getElementById("orderSummary").innerHTML = "<p class='text-gray-500'>No orders found.</p>";
+                    console.error("Failed to load orders or no orders available:", data.error || "No data");
                 }
             } catch (error) {
                 console.error("Error fetching orders:", error);
+                document.getElementById("orderSummary").innerHTML = "<p class='text-red-500'>Error loading orders. Please try again later.</p>";
             }
         }
 

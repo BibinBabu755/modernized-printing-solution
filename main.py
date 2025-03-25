@@ -43,7 +43,7 @@ RAZORPAY_KEY_SECRET = "9AiZepOIynKtEPTlAqEf0JbK"
 
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
-cred = credentials.Certificate(r"C:\Users\Ashish\Desktop\Mini project\Confidential\modernized-printing-solution-firebase-adminsdk-fbsvc-31596e3d1a.json")
+cred = credentials.Certificate(r"C:\Users\Bibin Babu\Documents\GitHub\modernized-printing-solution\confidential\modernized-printing-solution-firebase-adminsdk-fbsvc-31596e3d1a.json")
 firebase_admin.initialize_app(cred)
 FIREBASE_API_KEY = "AIzaSyCUYR-bTjZFUbCBKUIJX_RFwnockOymYYk"
 
@@ -264,18 +264,20 @@ file_path = os.path.join(base_dir, "admin.html")
 
 @app.route("/user_orders", methods=["GET"])
 def user_orders():
-    if "user" not in session:
-        return jsonify({"error": "User not logged in"}), 401  # Unauthorized
+    try:
+        email = request.args.get("email")
+        if not email:
+            return jsonify({"error": "Email parameter is missing"}), 400
 
-    email = session["user"]["email"]  # Fetch logged-in user's email
+        orders = list(db.orders.find({"email": email}, {"_id": 1, "status": 1, "paperSize": 1, "style": 1, "printType": 1}))
+        
+        # Convert ObjectId to string
+        for order in orders:
+            order["_id"] = str(order["_id"])
 
-    orders = list(db.orders.find({"email": email}, {"_id": 1, "status": 1, "paperSize": 1, "style": 1,  "printType": 1}))
-    
-    # Convert ObjectId to string
-    for order in orders:
-        order["_id"] = str(order["_id"])
-
-    return jsonify({"orders": orders}), 200
+        return jsonify({"orders": orders}), 200
+    except Exception as e:
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 @app.route("/submit_feedback", methods=["POST"])
 def submit_feedback():
