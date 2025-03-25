@@ -548,7 +548,11 @@
           paymentItem.innerHTML = `
                     Order ID: ${order._id} - 
                     <span class="payment-status ${order.payment_status || "pending"}" id="payment-status-${order._id}">${paymentStatus}</span> 
-                    <button class="confirm-btn" onclick="confirmPayment('${order._id}')">Confirm Payment</button>
+                    ${
+                      order.payment_status !== "paid"
+                          ? `<button class="confirm-btn" onclick="confirmPayment('${order._id}')">Confirm Payment</button>`
+                          : ""
+                    }
                 `;
           if (order.status == "completed") {
             paymentsList.appendChild(paymentItem);
@@ -576,6 +580,10 @@
             if (paymentStatusElement) {
               paymentStatusElement.textContent = "Payment Completed";
               paymentStatusElement.className = "payment-status confirmed";
+            }
+            const confirmButton = document.querySelector(`#payment-status-${orderId} + .confirm-btn`);
+            if (confirmButton) {
+              confirmButton.remove(); // Remove the button after confirming payment
             }
             showToast("Payment confirmed successfully");
           }

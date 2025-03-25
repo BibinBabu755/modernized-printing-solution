@@ -264,20 +264,18 @@ file_path = os.path.join(base_dir, "admin.html")
 
 @app.route("/user_orders", methods=["GET"])
 def user_orders():
-    try:
-        email = request.args.get("email")
-        if not email:
-            return jsonify({"error": "Email parameter is missing"}), 400
+    if "user" not in session:
+        return jsonify({"error": "User not logged in"}), 401  # Unauthorized
 
-        orders = list(db.orders.find({"email": email}, {"_id": 1, "status": 1, "paperSize": 1, "style": 1, "printType": 1}))
-        
-        # Convert ObjectId to string
-        for order in orders:
-            order["_id"] = str(order["_id"])
+    email = session["user"]["email"]  # Fetch logged-in user's email
 
-        return jsonify({"orders": orders}), 200
-    except Exception as e:
-        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+    orders = list(db.orders.find({"email": email}, {"_id": 1, "status": 1, "paperSize": 1, "style": 1,  "printType": 1}))
+    
+    # Convert ObjectId to string
+    for order in orders:
+        order["_id"] = str(order["_id"])
+
+    return jsonify({"orders": orders}), 200
 
 @app.route("/submit_feedback", methods=["POST"])
 def submit_feedback():
@@ -731,6 +729,29 @@ def get_pdf_page_count():
         return jsonify({"error": str(e)}), 500
         
 
+@app.route("/confirm_payment", methods=["POST"])
+def confirm_payment():
+    try:
+        data = request.json
+        order_id = data.get("order_id")
+        payment_status = data.get("payment_status", "paid")
+
+        if not order_id:
+            return jsonify({"error": "Missing order_id"}), 400
+
+        result = db.orders.update_one(
+            {"_id": ObjectId(order_id)},
+            {"$set": {"payment_status": payment_status}}
+        )
+
+        if result.modified_count == 1:
+            return jsonify({"message": "Payment status updated to paid"}), 200
+        else:
+            return jsonify({"error": "Order not found or payment status not updated"}), 404
+    except Exception as e:
+        import traceback
+        print("Error in confirm_payment:", traceback.format_exc())
+        return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
 
 
 if __name__ == "__main__":  
